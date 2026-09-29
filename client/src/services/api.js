@@ -1,8 +1,10 @@
 /**
  * Centralized Axios API Client
  * Configures base URL, timeout, headers, and standard error handling.
+ * Automatically attaches Supabase Auth JWT token to requests.
  */
 import axios from 'axios';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 // Base API URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -15,10 +17,19 @@ const apiClient = axios.create({
   },
 });
 
-// Request Interceptor
+// Request Interceptor: Attach Supabase JWT bearer token if available
 apiClient.interceptors.request.use(
-  (config) => {
-    // Phase 2: Attach JWT Authorization headers here
+  async (config) => {
+    try {
+      if (isSupabaseConfigured()) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          config.headers.Authorization = `Bearer ${session.access_token}`;
+        }
+      }
+    } catch (err) {
+      console.warn('Could not attach Supabase session token to API request:', err);
+    }
     return config;
   },
   (error) => {

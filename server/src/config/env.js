@@ -20,6 +20,10 @@ const config = {
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_NAME || 'flowsync',
   },
+  supabase: {
+    url: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+    anonKey: process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '',
+  },
   isProduction: process.env.NODE_ENV === 'production',
   isDevelopment: process.env.NODE_ENV !== 'production',
 };

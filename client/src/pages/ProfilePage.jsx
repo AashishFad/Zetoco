@@ -1,9 +1,14 @@
 import React from 'react';
 import { User, Mail, Shield, Calendar, CheckSquare, Sparkles, Building } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Avatar, useToast } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProfilePage() {
   const { addToast } = useToast();
+  const { user } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'FlowSync User';
+  const displayEmail = user?.email || 'user@flowsync.dev';
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -19,17 +24,17 @@ export default function ProfilePage() {
       <Card>
         <CardContent className="p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <Avatar name="Aashish Lead" size="xl" status="online" />
+            <Avatar name={displayName} size="xl" status="online" />
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-bold text-white">Aashish Lead</h2>
-                <Badge variant="brand" size="xs">Workspace Admin</Badge>
+                <h2 className="text-xl font-bold text-white">{displayName}</h2>
+                <Badge variant="brand" size="xs">Workspace Member</Badge>
               </div>
               <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5" /> lead@flowsync.dev
+                <Mail className="w-3.5 h-3.5" /> {displayEmail}
               </p>
               <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5" /> Acme Engineering • Lead Architect
+                <Building className="w-3.5 h-3.5" /> Acme Engineering • Authenticated User
               </p>
             </div>
           </div>

@@ -1,6 +1,9 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ToastProvider } from './components/ui';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import PublicOnlyRoute from './components/auth/PublicOnlyRoute';
 
 // Layouts
 import MainLayout from './layouts/MainLayout';
@@ -25,31 +28,39 @@ import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
-    <ToastProvider>
-      <Routes>
-        {/* Public Marketing & Authentication Layout */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
+    <AuthProvider>
+      <ToastProvider>
+        <Routes>
+          {/* Public Marketing Layout */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="*" element={<NotFoundPage />} />
 
-        {/* Authenticated Dashboard Shell Layout */}
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects/:id" element={<ProjectDetailPage />} />
-          <Route path="/tasks" element={<KanbanBoardPage />} />
-          <Route path="/team" element={<TeamPage />} />
-          <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/files" element={<FilesPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Route>
-      </Routes>
-    </ToastProvider>
+            {/* Public-only auth routes (redirect to /dashboard if already logged in) */}
+            <Route element={<PublicOnlyRoute />}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+            </Route>
+          </Route>
+
+          {/* Protected Application Routes (Protected by Supabase Auth Guard) */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/:id" element={<ProjectDetailPage />} />
+              <Route path="/tasks" element={<KanbanBoardPage />} />
+              <Route path="/team" element={<TeamPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/files" element={<FilesPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </ToastProvider>
+    </AuthProvider>
   );
 }

@@ -30,6 +30,7 @@ import ApiStatusBadge from '../components/common/ApiStatusBadge';
 import { Avatar, Badge, Dropdown, DropdownItem, DropdownDivider, Button, useToast } from '../components/ui';
 import CreateTaskModal from '../components/modals/CreateTaskModal';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
+import { useAuth } from '../context/AuthContext';
 import { APP_NAME } from '../constants';
 
 export default function DashboardLayout() {
@@ -40,6 +41,16 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { user, signOut } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'FlowSync User';
+  const displayEmail = user?.email || 'user@flowsync.dev';
+
+  const handleSignOut = async () => {
+    await signOut();
+    addToast('Signed out successfully', 'info');
+    navigate('/login', { replace: true });
+  };
 
   const mainNav = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
@@ -279,19 +290,19 @@ export default function DashboardLayout() {
                     collapsed && !mobileSidebarOpen ? 'justify-center p-1.5' : ''
                   }`}
                 >
-                  <Avatar name="Aashish Demo" size="sm" status="online" />
+                  <Avatar name={displayName} size="sm" status="online" />
                   {(!collapsed || mobileSidebarOpen) && (
                     <div className="text-left truncate flex-1">
-                      <p className="text-xs font-semibold text-slate-200 truncate">Aashish</p>
-                      <p className="text-[10px] text-slate-400 truncate">Lead Engineer</p>
+                      <p className="text-xs font-semibold text-slate-200 truncate">{displayName}</p>
+                      <p className="text-[10px] text-slate-400 truncate">{displayEmail}</p>
                     </div>
                   )}
                 </div>
               }
             >
               <div className="px-3.5 py-2.5 border-b border-surface-800">
-                <p className="text-xs font-bold text-white">Aashish (Demo Account)</p>
-                <p className="text-[10px] text-slate-400 truncate">lead@flowsync.dev</p>
+                <p className="text-xs font-bold text-white truncate">{displayName}</p>
+                <p className="text-[10px] text-slate-400 truncate">{displayEmail}</p>
               </div>
               <DropdownItem icon={User} onClick={() => navigate('/profile')}>
                 View Profile
@@ -300,7 +311,7 @@ export default function DashboardLayout() {
                 Preferences
               </DropdownItem>
               <DropdownDivider />
-              <DropdownItem icon={LogOut} danger onClick={() => navigate('/login')}>
+              <DropdownItem icon={LogOut} danger onClick={handleSignOut}>
                 Sign Out
               </DropdownItem>
             </Dropdown>
@@ -395,13 +406,13 @@ export default function DashboardLayout() {
               width="w-52"
               trigger={
                 <div className="cursor-pointer">
-                  <Avatar name="Aashish Demo" size="sm" status="online" />
+                  <Avatar name={displayName} size="sm" status="online" />
                 </div>
               }
             >
               <div className="px-3.5 py-2.5 border-b border-surface-800">
-                <p className="text-xs font-bold text-white">Aashish</p>
-                <p className="text-[10px] text-slate-400">lead@flowsync.dev</p>
+                <p className="text-xs font-bold text-white truncate">{displayName}</p>
+                <p className="text-[10px] text-slate-400 truncate">{displayEmail}</p>
               </div>
               <DropdownItem icon={User} onClick={() => navigate('/profile')}>
                 My Profile
@@ -410,7 +421,7 @@ export default function DashboardLayout() {
                 Workspace Settings
               </DropdownItem>
               <DropdownDivider />
-              <DropdownItem icon={LogOut} danger onClick={() => navigate('/login')}>
+              <DropdownItem icon={LogOut} danger onClick={handleSignOut}>
                 Sign Out
               </DropdownItem>
             </Dropdown>
