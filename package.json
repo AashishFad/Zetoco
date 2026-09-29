@@ -1,0 +1,26 @@
+{
+  "name": "flowsync-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FlowSync — Full-Stack Project & Team Collaboration Platform",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build:client": "npm run build --prefix client",
+    "test:db": "npm run test:db --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "flowsync",
+    "collaboration",
+    "project-management",
+    "portfolio",
+    "full-stack"
+  ],
+  "author": "",
+  "license": "ISC"
+}
