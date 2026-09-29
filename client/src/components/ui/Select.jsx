@@ -1,9 +1,6 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
-/**
- * Reusable Select Component
- */
 export default function Select({
   label,
   options = [],
@@ -19,7 +16,10 @@ export default function Select({
   return (
     <div className="w-full space-y-1.5">
       {label && (
-        <label htmlFor={selectId} className="block text-xs font-semibold text-slate-300">
+        <label
+          htmlFor={selectId}
+          className="block text-xs font-semibold text-slate-300 select-none"
+        >
           {label}
         </label>
       )}
@@ -28,20 +28,16 @@ export default function Select({
         <select
           id={selectId}
           disabled={disabled}
-          className={`w-full appearance-none rounded-xl bg-slate-900/90 border text-slate-100 text-xs sm:text-sm pl-3.5 pr-10 py-2.5 transition-all duration-150 focus:outline-none focus:ring-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer ${
+          className={`w-full appearance-none text-xs sm:text-sm rounded-xl bg-surface-900/90 border text-slate-100 pl-3.5 pr-10 py-2.5 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 disabled:opacity-50 cursor-pointer ${
             error
-              ? 'border-rose-500/80 focus:border-rose-500 focus:ring-rose-500/20'
-              : 'border-slate-800 focus:border-brand-500 focus:ring-brand-500/20 hover:border-slate-700'
+              ? 'border-rose-500/80 focus:ring-rose-500/40 focus:border-rose-500'
+              : 'border-surface-700/80 hover:border-surface-600'
           } ${className}`}
           {...props}
         >
           {options.map((opt) => (
-            <option
-              key={opt.value !== undefined ? opt.value : opt}
-              value={opt.value !== undefined ? opt.value : opt}
-              className="bg-slate-900 text-slate-100"
-            >
-              {opt.label || opt}
+            <option key={opt.value} value={opt.value} className="bg-surface-900 text-slate-200">
+              {opt.label}
             </option>
           ))}
         </select>
@@ -51,8 +47,11 @@ export default function Select({
         </div>
       </div>
 
-      {error && <p className="text-[11px] text-rose-400 font-medium">{error}</p>}
-      {!error && helperText && <p className="text-[11px] text-slate-400">{helperText}</p>}
+      {error ? (
+        <p className="text-[11px] font-medium text-rose-400">{error}</p>
+      ) : helperText ? (
+        <p className="text-[11px] text-slate-400">{helperText}</p>
+      ) : null}
     </div>
   );
 }

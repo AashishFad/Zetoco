@@ -1,81 +1,85 @@
-import React from 'react';
-import { Settings, Shield, Bell, Key, Globe, Database } from 'lucide-react';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
-import { useToast } from '../components/ui/Toast';
+import React, { useState } from 'react';
+import { Settings, Shield, Bell, Key, Globe, Database, Check } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, Select, Badge, useToast } from '../components/ui';
 
 export default function SettingsPage() {
   const { addToast } = useToast();
+  const [workspaceName, setWorkspaceName] = useState('Acme Engineering');
+  const [timezone, setTimezone] = useState('UTC');
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    addToast('Workspace preferences saved (UI Simulation)', 'success');
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="border-b border-slate-800 pb-5">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Workspace Settings
-          </h1>
-          <Badge variant="brand" size="sm">
-            Admin Access
-          </Badge>
-        </div>
-        <p className="text-xs text-slate-400 mt-1">
-          Configure organization preferences, member permissions, and environment variables.
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Workspace Settings
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          Configure organization preferences, member permissions, and notification rules.
         </p>
       </div>
 
-      <div className="space-y-6">
+      <form onSubmit={handleSave} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Workspace Profile</CardTitle>
-            <CardDescription>Primary organization information</CardDescription>
+            <CardTitle>General Information</CardTitle>
+            <CardDescription>Basic settings for your FlowSync workspace</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Workspace Name" defaultValue="FlowSync Technologies" />
-              <Input label="Workspace Slug" defaultValue="flowsync-tech" helperText="Used in URLs" />
-            </div>
-            <Input label="Contact Email" defaultValue="admin@flowsync.dev" />
-            <div className="pt-2">
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={() =>
-                  addToast({
-                    title: 'Settings Saved (Demo)',
-                    message: 'Workspace configurations updated.',
-                    type: 'success',
-                  })
-                }
-              >
-                Save Changes
-              </Button>
-            </div>
+            <Input
+              label="Workspace Name"
+              value={workspaceName}
+              onChange={(e) => setWorkspaceName(e.target.value)}
+            />
+
+            <Select
+              label="Default Timezone"
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              options={[
+                { label: 'UTC (Coordinated Universal Time)', value: 'UTC' },
+                { label: 'EST (Eastern Standard Time)', value: 'EST' },
+                { label: 'PST (Pacific Standard Time)', value: 'PST' },
+                { label: 'IST (India Standard Time)', value: 'IST' },
+              ]}
+            />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>PostgreSQL Foundation Configuration</CardTitle>
-            <CardDescription>Connection pool parameters established in Phase 1</CardDescription>
+            <CardTitle>Security & Role Permissions</CardTitle>
+            <CardDescription>Enforce security policies for team members</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-xs">
-            <div className="flex justify-between py-2 border-b border-slate-800">
-              <span className="text-slate-400">Database Engine:</span>
-              <span className="text-slate-200 font-mono">PostgreSQL 14+</span>
+            <div className="flex items-center justify-between p-3 rounded-xl bg-surface-950 border border-surface-800">
+              <div>
+                <p className="font-semibold text-white">Require Two-Factor Authentication (2FA)</p>
+                <p className="text-[11px] text-slate-400">Enforce 2FA for all Workspace Admins and Managers</p>
+              </div>
+              <Badge variant="success" size="xs">Enabled</Badge>
             </div>
-            <div className="flex justify-between py-2 border-b border-slate-800">
-              <span className="text-slate-400">Connection Pool Driver:</span>
-              <span className="text-slate-200 font-mono">node-postgres (pg.Pool)</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-slate-400">Health Endpoint:</span>
-              <span className="text-brand-400 font-mono">/api/health/full</span>
+
+            <div className="flex items-center justify-between p-3 rounded-xl bg-surface-950 border border-surface-800">
+              <div>
+                <p className="font-semibold text-white">Public Project Visibility</p>
+                <p className="text-[11px] text-slate-400">Allow team members to view projects across the organization</p>
+              </div>
+              <Badge variant="brand" size="xs">Active</Badge>
             </div>
           </CardContent>
         </Card>
-      </div>
+
+        <div className="flex justify-end gap-3">
+          <Button type="submit" size="sm" leftIcon={Check}>
+            Save Changes
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

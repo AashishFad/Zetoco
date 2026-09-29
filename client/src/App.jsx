@@ -1,8 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ToastProvider } from './components/ui';
+
+// Layouts
 import MainLayout from './layouts/MainLayout';
 import DashboardLayout from './layouts/DashboardLayout';
-import { ToastProvider } from './components/ui/Toast';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -10,8 +12,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectsPage from './pages/ProjectsPage';
-import TasksPage from './pages/TasksPage';
-import KanbanPage from './pages/KanbanPage';
+import ProjectDetailPage from './pages/ProjectDetailPage';
+import KanbanBoardPage from './pages/KanbanBoardPage';
 import TeamPage from './pages/TeamPage';
 import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
@@ -25,7 +27,7 @@ export default function App() {
   return (
     <ToastProvider>
       <Routes>
-        {/* Public Pages Layout */}
+        {/* Public Marketing & Authentication Layout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -33,12 +35,12 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Route>
 
-        {/* Authenticated Application Shell Layout */}
+        {/* Authenticated Dashboard Shell Layout */}
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/tasks" element={<TasksPage />} />
-          <Route path="/kanban" element={<KanbanPage />} />
+          <Route path="/projects/:id" element={<ProjectDetailPage />} />
+          <Route path="/tasks" element={<KanbanBoardPage />} />
           <Route path="/team" element={<TeamPage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />

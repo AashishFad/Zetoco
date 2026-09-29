@@ -2,160 +2,193 @@ import React, { useState } from 'react';
 import {
   Bell,
   CheckCircle2,
+  AlertCircle,
   MessageSquare,
-  AlertTriangle,
+  Clock,
   Check,
   Filter,
-  Trash2,
-  Sparkles
+  Sparkles,
+  AlertTriangle,
+  FolderKanban
 } from 'lucide-react';
-import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import Tabs from '../components/ui/Tabs';
-import { useToast } from '../components/ui/Toast';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Tabs, useToast } from '../components/ui';
 
 export default function NotificationsPage() {
-  const [filter, setFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('all');
   const { addToast } = useToast();
 
+  // Section 16 Requirements: Rahul assigned you a task, Priya mentioned you, Payment API completed, Task deadline approaching
   const [notifications, setNotifications] = useState([
     {
       id: 1,
       type: 'task',
       icon: Bell,
-      iconBg: 'bg-brand-500/10 text-brand-400',
+      iconColor: 'text-brand-400',
+      iconBg: 'bg-brand-500/15 border-brand-500/30',
       title: 'Rahul assigned you a task',
-      description: 'You were assigned to "Implement Payment Gateway Integration (Stripe)" in E-Commerce Platform.',
+      description: 'You were assigned to "Implement Login API & JWT Middleware" on FlowSync Core.',
       time: '10 mins ago',
       unread: true,
+      category: 'tasks',
     },
     {
       id: 2,
       type: 'mention',
       icon: MessageSquare,
-      iconBg: 'bg-accent-500/10 text-accent-400',
-      title: 'Priya mentioned you in #frontend',
-      description: '"@Aashish what do you think of the new design tokens and button focus rings?"',
+      iconColor: 'text-cyan-400',
+      iconBg: 'bg-cyan-500/15 border-cyan-500/30',
+      title: 'Priya mentioned you',
+      description: 'In #frontend: "@Aashish can you review the new accessible modal focus traps?"',
       time: '1 hour ago',
       unread: true,
+      category: 'mentions',
     },
     {
       id: 3,
-      type: 'success',
+      type: 'complete',
       icon: CheckCircle2,
-      iconBg: 'bg-emerald-500/10 text-emerald-400',
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/15 border-emerald-500/30',
       title: 'Payment API completed',
-      description: 'The task was verified and moved to "Done" column by QA.',
+      description: 'Dhruv moved "Stripe Webhooks & Reconciliation" to the Done column.',
       time: '2 hours ago',
       unread: false,
+      category: 'tasks',
     },
     {
       id: 4,
-      type: 'warning',
+      type: 'deadline',
       icon: AlertTriangle,
-      iconBg: 'bg-amber-500/10 text-amber-400',
+      iconColor: 'text-amber-400',
+      iconBg: 'bg-amber-500/15 border-amber-500/30',
       title: 'Task deadline approaching',
-      description: '"Navbar Redesign & Mobile Drawer" is due in 24 hours.',
+      description: '"Database Indexing & PostgreSQL Config" is due tomorrow at 5:00 PM.',
       time: '4 hours ago',
       unread: false,
+      category: 'system',
+    },
+    {
+      id: 5,
+      type: 'project',
+      icon: FolderKanban,
+      iconColor: 'text-purple-400',
+      iconBg: 'bg-purple-500/15 border-purple-500/30',
+      title: 'New Sprint 14 created',
+      description: 'Sprint 14 has begun for project "E-Commerce Platform" with 32 story points.',
+      time: 'Yesterday',
+      unread: false,
+      category: 'system',
     },
   ]);
 
   const tabs = [
-    { id: 'all', label: 'All Alerts', badge: notifications.length },
-    { id: 'unread', label: 'Unread', badge: notifications.filter((n) => n.unread).length },
-    { id: 'task', label: 'Tasks' },
-    { id: 'mention', label: 'Mentions' },
+    { id: 'all', label: 'All Notifications', count: notifications.length },
+    { id: 'unread', label: 'Unread', count: notifications.filter((n) => n.unread).length },
+    { id: 'tasks', label: 'Tasks' },
+    { id: 'mentions', label: 'Mentions' },
+    { id: 'system', label: 'System Alerts' },
   ];
 
-  const handleMarkAllRead = () => {
+  const markAllRead = () => {
     setNotifications(notifications.map((n) => ({ ...n, unread: false })));
-    addToast({
-      title: 'Notifications Updated',
-      message: 'All notifications marked as read.',
-      type: 'success',
-    });
+    addToast('All notifications marked as read', 'success');
+  };
+
+  const toggleRead = (id) => {
+    setNotifications(
+      notifications.map((n) => (n.id === id ? { ...n, unread: !n.unread } : n))
+    );
   };
 
   const filteredNotifications = notifications.filter((n) => {
-    if (filter === 'unread') return n.unread;
-    if (filter === 'task') return n.type === 'task';
-    if (filter === 'mention') return n.type === 'mention';
-    return true;
+    if (activeTab === 'all') return true;
+    if (activeTab === 'unread') return n.unread;
+    return n.category === activeTab;
   });
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Notification Center
-            </h1>
-            <Badge variant="brand" size="sm">
-              {notifications.filter((n) => n.unread).length} Unread
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Stay updated on assignments, team mentions, and milestone progress.
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Notification Center
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Stay updated with task assignments, team mentions, and sprint alerts.
           </p>
         </div>
 
         <Button
-          size="sm"
-          variant="secondary"
+          variant="outline"
+          size="xs"
           leftIcon={Check}
-          onClick={handleMarkAllRead}
+          onClick={markAllRead}
         >
           Mark all as read
         </Button>
       </div>
 
       {/* Tabs */}
-      <Tabs tabs={tabs} activeTab={filter} onChange={setFilter} />
+      <Tabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onChange={(tab) => setActiveTab(tab)}
+      />
 
       {/* Notifications List */}
       <div className="space-y-3">
-        {filteredNotifications.map((n) => {
-          const Icon = n.icon;
-          return (
-            <div
-              key={n.id}
-              className={`p-4 sm:p-5 rounded-2xl border transition-all flex items-start gap-4 ${
-                n.unread
-                  ? 'bg-brand-950/20 border-brand-500/30 shadow-sm'
-                  : 'bg-slate-900/60 border-slate-800'
-              }`}
-            >
-              <div className={`p-2.5 rounded-xl shrink-0 ${n.iconBg}`}>
-                <Icon className="w-5 h-5" />
-              </div>
+        {filteredNotifications.length === 0 ? (
+          <Card className="p-12 text-center text-slate-400">
+            <p className="text-sm font-semibold text-white">No notifications in this category</p>
+            <p className="text-xs mt-1">You are all caught up!</p>
+          </Card>
+        ) : (
+          filteredNotifications.map((n) => {
+            const Icon = n.icon;
+            return (
+              <div
+                key={n.id}
+                className={`p-4 rounded-2xl border transition-all flex items-start justify-between gap-4 ${
+                  n.unread
+                    ? 'bg-surface-900 border-brand-500/40 shadow-sm'
+                    : 'bg-surface-950/60 border-surface-800/80 hover:border-surface-700'
+                }`}
+              >
+                <div className="flex items-start gap-3.5">
+                  <div className={`p-2.5 rounded-xl border shrink-0 ${n.iconBg}`}>
+                    <Icon className={`w-4 h-4 ${n.iconColor}`} />
+                  </div>
 
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className={`text-xs sm:text-sm font-bold ${n.unread ? 'text-white' : 'text-slate-200'}`}>
-                    {n.title}
-                  </h3>
-                  <span className="text-[10px] text-slate-500 font-mono shrink-0">{n.time}</span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs sm:text-sm font-bold text-white">
+                        {n.title}
+                      </h3>
+                      {n.unread && (
+                        <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      {n.description}
+                    </p>
+                    <span className="text-[10px] text-slate-500 mt-2 block flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {n.time}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">{n.description}</p>
+
+                <div className="shrink-0">
+                  <button
+                    onClick={() => toggleRead(n.id)}
+                    className="text-[11px] font-semibold text-slate-400 hover:text-white px-2 py-1 rounded-lg hover:bg-surface-800 transition-colors"
+                  >
+                    {n.unread ? 'Mark read' : 'Mark unread'}
+                  </button>
+                </div>
               </div>
-
-              {n.unread && (
-                <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0 mt-2"></span>
-              )}
-            </div>
-          );
-        })}
-
-        {filteredNotifications.length === 0 && (
-          <div className="p-12 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/40">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-            <p className="text-sm font-bold text-white">All caught up!</p>
-            <p className="text-xs text-slate-400 mt-1">No notifications matching this filter.</p>
-          </div>
+            );
+          })
         )}
       </div>
     </div>

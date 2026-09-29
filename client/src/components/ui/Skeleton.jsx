@@ -1,63 +1,62 @@
 import React from 'react';
 
-/**
- * Reusable Skeleton Loaders for clean loading UI
- */
-export function Skeleton({ className = '' }) {
+export function Skeleton({ className = '', ...props }) {
   return (
-    <div className={`animate-pulse rounded-lg bg-slate-800/80 ${className}`} />
+    <div
+      className={`animate-pulse rounded-lg bg-surface-800/80 ${className}`}
+      {...props}
+    />
   );
 }
 
-export function MetricCardSkeleton() {
+export function SkeletonStat() {
   return (
-    <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+    <div className="rounded-xl bg-surface-900/80 border border-surface-800 p-5 space-y-3">
       <div className="flex items-center justify-between">
         <Skeleton className="h-3.5 w-24" />
         <Skeleton className="h-8 w-8 rounded-lg" />
       </div>
       <Skeleton className="h-7 w-16" />
-      <Skeleton className="h-3 w-32" />
+      <Skeleton className="h-3 w-28" />
     </div>
   );
 }
 
-export function ProjectCardSkeleton() {
+export function SkeletonCard() {
   return (
-    <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
+    <div className="rounded-2xl bg-surface-900/80 border border-surface-800 p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <Skeleton className="h-4 w-36" />
-        <Skeleton className="h-5 w-16 rounded-full" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-10 h-10 rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        </div>
+        <Skeleton className="h-6 w-16 rounded-full" />
       </div>
       <Skeleton className="h-3 w-full" />
-      <Skeleton className="h-3 w-3/4" />
+      <Skeleton className="h-2 w-full rounded-full" />
       <div className="flex items-center justify-between pt-2">
-        <div className="flex -space-x-2">
-          <Skeleton className="h-6 w-6 rounded-full" />
-          <Skeleton className="h-6 w-6 rounded-full" />
-        </div>
+        <Skeleton className="h-6 w-24 rounded-full" />
+        <Skeleton className="h-4 w-12" />
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonTask() {
+  return (
+    <div className="rounded-xl bg-surface-900 border border-surface-800 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-4 w-12 rounded-full" />
+      </div>
+      <Skeleton className="h-4 w-4/5" />
+      <div className="flex items-center justify-between pt-2">
+        <Skeleton className="h-6 w-6 rounded-full" />
         <Skeleton className="h-3 w-20" />
       </div>
     </div>
   );
 }
-
-export function TaskRowSkeleton() {
-  return (
-    <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-4 w-4 rounded" />
-        <div className="space-y-1.5">
-          <Skeleton className="h-3.5 w-48" />
-          <Skeleton className="h-2.5 w-24" />
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-5 w-16 rounded-full" />
-        <Skeleton className="h-7 w-7 rounded-full" />
-      </div>
-    </div>
-  );
-}
-
-export default Skeleton;

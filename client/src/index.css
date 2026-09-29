@@ -7,63 +7,41 @@
     color-scheme: dark;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
-
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    @apply bg-dark-950 text-slate-100 antialiased selection:bg-brand-500 selection:text-white;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    @apply bg-surface-950 text-slate-100 antialiased selection:bg-brand-500 selection:text-white;
   }
 
-  /* Custom Clean Scrollbars */
+  /* Custom scrollbar for clean SaaS aesthetics */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #0f172a;
+    background: #090d16;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #1e293b;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+    background: #334155;
   }
 }
 
-@layer components {
-  /* Glassmorphism Card Style */
+@layer utilities {
+  .glass-panel {
+    @apply bg-surface-900/80 backdrop-blur-md border border-surface-800/80;
+  }
+
   .glass-card {
-    @apply bg-slate-900/75 backdrop-blur-md border border-slate-800/80 shadow-card-subtle;
+    @apply bg-surface-900/60 backdrop-blur-sm border border-surface-800/70 hover:border-surface-700/80 transition-all duration-200;
   }
 
-  .glass-card-hover {
-    @apply glass-card hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-200;
-  }
-
-  /* Modern Gradient Accent Badges */
-  .badge-brand {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/15 text-brand-300 border border-brand-500/30;
-  }
-
-  .badge-accent {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-500/15 text-accent-300 border border-accent-500/30;
-  }
-
-  .badge-success {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30;
-  }
-
-  .badge-warning {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30;
-  }
-
-  .badge-danger {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30;
+  .glow-border {
+    @apply relative before:absolute before:-inset-px before:rounded-2xl before:bg-gradient-to-r before:from-brand-500/30 before:to-cyan-500/30 before:pointer-events-none before:-z-10;
   }
 }
