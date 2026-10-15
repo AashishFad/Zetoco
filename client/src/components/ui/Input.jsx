@@ -18,15 +18,15 @@ export default function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-xs font-semibold text-slate-300 select-none"
+          className="block text-xs font-medium text-[#A1A1AA] select-none"
         >
           {label}
         </label>
       )}
 
-      <div className="relative rounded-xl shadow-sm">
+      <div className="relative rounded-md shadow-sm">
         {LeftIcon && (
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#71717A]">
             <LeftIcon className="w-4 h-4" />
           </div>
         )}
@@ -34,18 +34,18 @@ export default function Input({
         <input
           id={inputId}
           disabled={disabled}
-          className={`w-full text-xs sm:text-sm rounded-xl bg-surface-900/90 border text-slate-100 placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 disabled:opacity-50 disabled:bg-surface-950 disabled:cursor-not-allowed ${
-            LeftIcon ? 'pl-10' : 'pl-3.5'
-          } ${RightIcon ? 'pr-10' : 'pr-3.5'} py-2.5 ${
+          className={`w-full text-xs sm:text-sm rounded-md bg-[#111114] border text-[#F5F5F7] placeholder-[#71717A] transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:bg-[#080808] disabled:cursor-not-allowed ${
+            LeftIcon ? 'pl-9' : 'pl-3'
+          } ${RightIcon ? 'pr-9' : 'pr-3'} py-2 ${
             error
-              ? 'border-rose-500/80 focus:ring-rose-500/40 focus:border-rose-500'
-              : 'border-surface-700/80 hover:border-surface-600'
+              ? 'border-red-500/80 focus:ring-red-500 focus:border-red-500'
+              : 'border-[#292930] hover:border-[#383842]'
           } ${className}`}
           {...props}
         />
 
         {RightIcon && (
-          <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-surface-400">
             <RightIcon className="w-4 h-4" />
           </div>
         )}
@@ -54,7 +54,7 @@ export default function Input({
       {error ? (
         <p className="text-[11px] font-medium text-rose-400">{error}</p>
       ) : helperText ? (
-        <p className="text-[11px] text-slate-400">{helperText}</p>
+        <p className="text-[11px] text-surface-400">{helperText}</p>
       ) : null}
     </div>
   );

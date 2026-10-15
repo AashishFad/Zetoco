@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const AuthContext = createContext(null);
@@ -14,9 +14,65 @@ export const useAuth = () => {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const isConfigured = isSupabaseConfigured();
+
+  // Fetch or auto-create profile for authenticated user
+  const fetchProfile = useCallback(async (currentUser) => {
+    if (!currentUser || !isConfigured) {
+      setProfile(null);
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.warn('Could not fetch profile from Supabase:', error.message);
+      }
+
+      if (data) {
+        setProfile(data);
+        return data;
+      }
+
+      // If no profile exists yet, insert fallback profile record
+      const defaultFullName = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Zetoco User';
+      const defaultUsername = (currentUser.email?.split('@')[0] || 'user').toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + currentUser.id.substring(0, 4);
+
+      const newProfile = {
+        id: currentUser.id,
+        full_name: defaultFullName,
+        username: defaultUsername,
+        job_title: 'Workspace Member',
+        bio: 'Collaborating on Zetoco workspaces.',
+      };
+
+      const { data: insertedData, error: insertError } = await supabase
+        .from('profiles')
+        .insert(newProfile)
+        .select()
+        .maybeSingle();
+
+      if (insertError) {
+        // In case of table/schema delays or conflict, fall back gracefully
+        setProfile(newProfile);
+        return newProfile;
+      }
+
+      setProfile(insertedData || newProfile);
+      return insertedData || newProfile;
+    } catch (err) {
+      console.warn('Profile fetch/init exception:', err.message);
+      return null;
+    }
+  }, [isConfigured]);
 
   useEffect(() => {
     let isMounted = true;
@@ -28,6 +84,7 @@ export function AuthProvider({ children }) {
           if (isMounted) {
             setUser(null);
             setSession(null);
+            setProfile(null);
             setLoading(false);
           }
           return;
@@ -40,7 +97,11 @@ export function AuthProvider({ children }) {
 
         if (isMounted) {
           setSession(initialSession);
-          setUser(initialSession?.user ?? null);
+          const currentUser = initialSession?.user ?? null;
+          setUser(currentUser);
+          if (currentUser) {
+            await fetchProfile(currentUser);
+          }
           setLoading(false);
         }
       } catch (err) {
@@ -59,7 +120,13 @@ export function AuthProvider({ children }) {
         if (!isMounted) return;
 
         setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+        const currentUser = currentSession?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          await fetchProfile(currentUser);
+        } else {
+          setProfile(null);
+        }
         setLoading(false);
       }
     );
@@ -68,7 +135,7 @@ export function AuthProvider({ children }) {
       isMounted = false;
       subscription?.unsubscribe();
     };
-  }, [isConfigured]);
+  }, [isConfigured, fetchProfile]);
 
   /**
    * User Registration with Email + Password and Full Name metadata
@@ -76,7 +143,7 @@ export function AuthProvider({ children }) {
   const signUp = async ({ email, password, fullName }) => {
     setAuthError(null);
     if (!isConfigured) {
-      const errorMsg = 'Supabase credentials are not configured in client/.env. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.';
+      const errorMsg = 'Supabase credentials are not configured in client/.env.';
       setAuthError(errorMsg);
       return { success: false, error: errorMsg };
     }
@@ -97,8 +164,10 @@ export function AuthProvider({ children }) {
         return { success: false, error: error.message };
       }
 
-      // Check if user was created and whether email confirmation is required
-      // If session is null but user exists, email confirmation is required by Supabase project
+      if (data.user && data.session) {
+        await fetchProfile(data.user);
+      }
+
       const needsEmailConfirmation = data.user && !data.session;
 
       return {
@@ -120,7 +189,7 @@ export function AuthProvider({ children }) {
   const signIn = async ({ email, password }) => {
     setAuthError(null);
     if (!isConfigured) {
-      const errorMsg = 'Supabase credentials are not configured in client/.env. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.';
+      const errorMsg = 'Supabase credentials are not configured in client/.env.';
       setAuthError(errorMsg);
       return { success: false, error: errorMsg };
     }
@@ -144,6 +213,9 @@ export function AuthProvider({ children }) {
 
       setUser(data.user);
       setSession(data.session);
+      if (data.user) {
+        await fetchProfile(data.user);
+      }
       return { success: true, user: data.user, session: data.session };
     } catch (err) {
       const message = err.message || 'An unexpected network error occurred.';
@@ -163,14 +235,50 @@ export function AuthProvider({ children }) {
       }
       setUser(null);
       setSession(null);
+      setProfile(null);
       return { success: true };
     } catch (err) {
       console.error('Error signing out:', err);
-      // Still clear local state on error
       setUser(null);
       setSession(null);
+      setProfile(null);
       return { success: true };
     }
+  };
+
+  /**
+   * Update Profile data
+   */
+  const updateProfile = async (updates) => {
+    if (!user || !isConfigured) return { success: false, error: 'Not authenticated' };
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      setProfile(data);
+      return { success: true, profile: data };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const refreshProfile = () => {
+    if (user) {
+      return fetchProfile(user);
+    }
+    return Promise.resolve(null);
   };
 
   const clearError = () => setAuthError(null);
@@ -178,6 +286,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     session,
+    profile,
     loading,
     isAuthenticated: Boolean(user),
     isConfigured,
@@ -186,6 +295,8 @@ export function AuthProvider({ children }) {
     signUp,
     signIn,
     signOut,
+    updateProfile,
+    refreshProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

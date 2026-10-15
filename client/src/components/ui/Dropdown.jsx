@@ -23,17 +23,18 @@ export default function Dropdown({
   const alignStyles = {
     right: 'right-0',
     left: 'left-0',
+    center: 'left-1/2 -translate-x-1/2',
   };
 
   return (
-    <div className={`relative inline-block text-left ${className}`} ref={dropdownRef}>
+    <div className={`relative ${className || 'inline-block'} text-left`} ref={dropdownRef}>
       <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
         {typeof trigger === 'function' ? trigger({ isOpen }) : trigger}
       </div>
 
       {isOpen && (
         <div
-          className={`absolute ${alignStyles[align]} mt-2 ${width} rounded-xl bg-surface-900 border border-surface-750 border-surface-700/80 shadow-2xl shadow-black/60 py-1.5 z-50 focus:outline-none animate-slide-down`}
+          className={`absolute ${alignStyles[align] || 'left-0'} mt-2 ${width} rounded-xl bg-[#17171C] border border-[#292930] shadow-2xl py-1 z-50 focus:outline-none animate-slide-down`}
           onClick={() => setIsOpen(false)}
         >
           {children}
@@ -54,18 +55,18 @@ export function DropdownItem({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-left transition-colors ${
+      className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-xs font-medium text-left transition-colors ${
         danger
-          ? 'text-rose-400 hover:bg-rose-500/10 hover:text-rose-300'
-          : 'text-slate-300 hover:bg-surface-800 hover:text-white'
+          ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
+          : 'text-[#A1A1AA] hover:bg-[#202027] hover:text-[#F5F5F7]'
       } ${className}`}
     >
-      {Icon && <Icon className="w-4 h-4 shrink-0 opacity-75" />}
+      {Icon && <Icon className="w-3.5 h-3.5 shrink-0 opacity-75" />}
       <span className="truncate">{children}</span>
     </button>
   );
 }
 
 export function DropdownDivider() {
-  return <div className="my-1.5 border-t border-surface-800" />;
+  return <div className="my-1 border-t border-[#1F1F24]" />;
 }

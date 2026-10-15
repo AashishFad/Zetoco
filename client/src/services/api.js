@@ -22,7 +22,17 @@ apiClient.interceptors.request.use(
   async (config) => {
     try {
       if (isSupabaseConfigured()) {
-        const { data: { session } } = await supabase.auth.getSession();
+        let { data: { session } } = await supabase.auth.getSession();
+        if (session && session.expires_at && session.expires_at * 1000 < Date.now() + 60000) {
+          try {
+            const { data: refreshed } = await supabase.auth.refreshSession();
+            if (refreshed?.session) {
+              session = refreshed.session;
+            }
+          } catch (refreshErr) {
+            console.warn('Could not refresh Supabase session:', refreshErr);
+          }
+        }
         if (session?.access_token) {
           config.headers.Authorization = `Bearer ${session.access_token}`;
         }

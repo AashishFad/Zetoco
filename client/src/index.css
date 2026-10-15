@@ -3,45 +3,84 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  .dark {
     color-scheme: dark;
+    --surface-950: 8 8 8;       /* Canvas: #080808 */
+    --surface-900: 17 17 20;    /* Surface: #111114 */
+    --surface-850: 23 23 28;    /* Elevated: #17171C */
+    --surface-800: 32 32 39;    /* Hover: #202027 */
+    --surface-750: 36 36 44;    /* Active Hover: #24242C */
+    --surface-700: 41 41 48;    /* Border: #292930 */
+    --surface-650: 31 31 36;    /* Subtle Border: #1F1F24 */
+    --surface-600: 56 56 66;    /* Accent Border: #383842 */
+    --surface-500: 113 113 122; /* Muted: #71717A */
+    --surface-400: 161 161 170; /* Secondary: #A1A1AA */
+    --surface-300: 212 212 216; /* Near-Primary: #D4D4D8 */
+    --surface-200: 245 245 247; /* Primary Text: #F5F5F7 */
+    --surface-100: 255 255 255; /* Crisp White Heading: #FFFFFF */
+    --surface-50: 255 255 255;
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    @apply bg-surface-950 text-slate-100 antialiased selection:bg-brand-500 selection:text-white;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #080808;
+    color: #F5F5F7;
+    @apply bg-surface-950 text-surface-200 antialiased selection:bg-brand-600 selection:text-white transition-colors duration-150;
   }
 
-  /* Custom scrollbar for clean SaaS aesthetics */
+  /* Sleek Graphite Scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #090d16;
+    background: #080808;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1e293b;
+    background: #202027;
     border-radius: 9999px;
+    border: 1px solid #111114;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: #292930;
   }
 }
 
 @layer utilities {
+  .zetoco-card {
+    @apply bg-surface-900 border border-surface-700 rounded-xl transition-all duration-150 shadow-card;
+  }
+
+  .zetoco-card-hover {
+    @apply hover:border-surface-600 hover:bg-surface-850 transition-all duration-150;
+  }
+
+  .zetoco-panel {
+    @apply bg-surface-900 border border-surface-700 rounded-xl;
+  }
+
+  /* Legacy compatibility aliases mapped cleanly */
+  .jira-card {
+    @apply bg-surface-900 hover:bg-surface-850 hover:border-surface-600 border border-surface-700 rounded-xl transition-all duration-150 shadow-card;
+  }
+
+  .jira-panel {
+    @apply bg-surface-900 border border-surface-700 rounded-xl;
+  }
+
   .glass-panel {
-    @apply bg-surface-900/80 backdrop-blur-md border border-surface-800/80;
+    @apply bg-surface-900/95 backdrop-blur-md border border-surface-700;
   }
 
   .glass-card {
-    @apply bg-surface-900/60 backdrop-blur-sm border border-surface-800/70 hover:border-surface-700/80 transition-all duration-200;
+    @apply bg-surface-900/90 backdrop-blur-sm border border-surface-700 hover:border-brand-500/50 transition-all duration-150;
   }
 
   .glow-border {
-    @apply relative before:absolute before:-inset-px before:rounded-2xl before:bg-gradient-to-r before:from-brand-500/30 before:to-cyan-500/30 before:pointer-events-none before:-z-10;
+    @apply border border-surface-700 hover:border-brand-500/50 transition-colors;
   }
 }

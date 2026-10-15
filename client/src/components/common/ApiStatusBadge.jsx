@@ -29,11 +29,11 @@ export default function ApiStatusBadge() {
   }, []);
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors bg-slate-800/80 border-slate-700">
+    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border transition-colors bg-[#111114] border-[#292930] text-[#A1A1AA]">
       {status === 'checking' && (
         <>
           <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
-          <span className="text-amber-300">Checking API...</span>
+          <span className="text-amber-400">Verifying API...</span>
         </>
       )}
       {status === 'online' && (
@@ -42,17 +42,16 @@ export default function ApiStatusBadge() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span className="text-emerald-300">Backend API Online</span>
-          {lastCheck && <span className="text-slate-400 text-[10px]">({lastCheck})</span>}
+          <span className="text-emerald-400 font-medium">API Connected</span>
         </>
       )}
       {status === 'offline' && (
         <>
           <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-          <span className="text-rose-300">Backend API Disconnected</span>
+          <span className="text-rose-400">API Offline</span>
           <button
             onClick={verifyBackend}
-            className="ml-1 text-[10px] underline text-slate-400 hover:text-slate-200"
+            className="ml-1 text-[10px] underline text-[#71717A] hover:text-[#F5F5F7]"
             title="Retry Connection"
           >
             Retry

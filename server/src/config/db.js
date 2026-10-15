@@ -35,24 +35,43 @@ pool.on('error', (err) => {
 const query = (text, params) => pool.query(text, params);
 
 /**
- * Verifies the PostgreSQL database connection
- * @returns {Promise<{ connected: boolean, message: string, timestamp?: string, error?: string }>}
+ * Verifies database connection (checks Supabase PostgreSQL first, then local pool fallback)
+ * @returns {Promise<{ connected: boolean, message: string, timestamp?: string, provider?: string, error?: string }>}
  */
 const testDbConnection = async () => {
   try {
+    const { supabase, isConfigured } = require('./supabase');
+    if (isConfigured) {
+      const { data, error } = await supabase.from('organizations').select('id').limit(1);
+      if (!error) {
+        return {
+          connected: true,
+          provider: 'Supabase PostgreSQL',
+          message: 'Supabase PostgreSQL connected successfully',
+          timestamp: new Date().toISOString(),
+        };
+      }
+    }
+
     const result = await pool.query('SELECT NOW() as current_time, version() as pg_version');
     return {
       connected: true,
+      provider: 'Local PostgreSQL',
       message: 'PostgreSQL database connection successful',
       timestamp: result.rows[0].current_time,
       version: result.rows[0].pg_version,
     };
   } catch (error) {
     const errorDetails = error.message || error.code || 'Could not connect to PostgreSQL server';
+    const safeErrorLog = typeof errorDetails === 'string'
+      ? errorDetails.replace(/postgresql:\/\/[^:]+:[^@]+@/gi, 'postgresql://***:***@')
+      : 'Connection failure';
+    console.error('PostgreSQL testDbConnection error:', safeErrorLog);
+
     return {
       connected: false,
-      message: `PostgreSQL connection error: ${errorDetails}`,
-      error: errorDetails,
+      message: 'PostgreSQL connection error: Could not connect to database server',
+      ...(config.isDevelopment && { error: errorDetails }),
     };
   }
 };

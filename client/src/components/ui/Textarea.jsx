@@ -17,7 +17,7 @@ export default function Textarea({
       {label && (
         <label
           htmlFor={textareaId}
-          className="block text-xs font-semibold text-slate-300 select-none"
+          className="block text-xs font-medium text-[#A1A1AA] select-none"
         >
           {label}
         </label>
@@ -27,10 +27,10 @@ export default function Textarea({
         id={textareaId}
         rows={rows}
         disabled={disabled}
-        className={`w-full text-xs sm:text-sm rounded-xl bg-surface-900/90 border text-slate-100 placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 disabled:opacity-50 disabled:bg-surface-950 px-3.5 py-2.5 resize-none ${
+        className={`w-full text-xs sm:text-sm rounded-md bg-[#111114] border text-[#F5F5F7] placeholder-[#71717A] transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:bg-[#080808] px-3 py-2.5 resize-none ${
           error
-            ? 'border-rose-500/80 focus:ring-rose-500/40 focus:border-rose-500'
-            : 'border-surface-700/80 hover:border-surface-600'
+            ? 'border-red-500/80 focus:ring-red-500 focus:border-red-500'
+            : 'border-[#292930] hover:border-[#383842]'
         } ${className}`}
         {...props}
       />

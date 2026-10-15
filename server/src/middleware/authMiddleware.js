@@ -41,7 +41,8 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Attach verified user identity from Supabase (never from untrusted body parameters)
+    // Attach verified user identity and bearer token from Supabase
+    req.token = token;
     req.user = {
       id: user.id,
       email: user.email,

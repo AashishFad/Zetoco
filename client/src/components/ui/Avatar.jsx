@@ -16,27 +16,28 @@ const statusMap = {
 };
 
 const bgColors = [
-  'bg-gradient-to-tr from-indigo-600 to-indigo-400',
-  'bg-gradient-to-tr from-cyan-600 to-blue-400',
-  'bg-gradient-to-tr from-purple-600 to-pink-400',
-  'bg-gradient-to-tr from-emerald-600 to-teal-400',
-  'bg-gradient-to-tr from-amber-600 to-orange-400',
-  'bg-gradient-to-tr from-rose-600 to-red-400',
+  'bg-[#17171C] text-[#F5F5F7] border border-[#292930]',
+  'bg-[#202027] text-[#F5F5F7] border border-[#292930]',
+  'bg-indigo-950/70 text-indigo-200 border border-indigo-500/30',
+  'bg-slate-800 text-slate-200 border border-slate-700',
+  'bg-zinc-800 text-zinc-200 border border-zinc-700',
+  'bg-neutral-800 text-neutral-200 border border-neutral-700',
 ];
 
 const getInitials = (name) => {
-  if (!name) return 'FS';
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) {
+  if (!name || typeof name !== 'string') return 'ZT';
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
-  return name.slice(0, 2).toUpperCase();
+  return name.trim().slice(0, 2).toUpperCase() || 'ZT';
 };
 
 const getColorIndex = (name = '') => {
+  const safeStr = typeof name === 'string' ? name : (name ? String(name) : 'ZT');
   let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < safeStr.length; i++) {
+    hash = safeStr.charCodeAt(i) + ((hash << 5) - hash);
   }
   return Math.abs(hash % bgColors.length);
 };
@@ -48,8 +49,9 @@ export default function Avatar({
   status,
   className = '',
 }) {
-  const initials = getInitials(name);
-  const colorBg = bgColors[getColorIndex(name)];
+  const cleanName = typeof name === 'string' ? name : (name ? String(name) : '');
+  const initials = getInitials(cleanName);
+  const colorBg = bgColors[getColorIndex(cleanName)];
 
   return (
     <div className={`relative inline-flex shrink-0 select-none ${className}`}>

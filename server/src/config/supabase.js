@@ -23,7 +23,21 @@ const supabase = createClient(
   }
 );
 
+const getUserClient = (token) => {
+  if (!isConfigured) return supabase;
+  return createClient(config.supabase.url, config.supabase.anonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    global: {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    },
+  });
+};
+
 module.exports = {
   supabase,
   isConfigured,
+  getUserClient,
 };

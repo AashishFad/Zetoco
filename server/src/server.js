@@ -18,10 +18,10 @@ const startServer = async () => {
       console.log('Testing PostgreSQL connectivity...');
       const dbStatus = await testDbConnection();
       if (dbStatus.connected) {
-        console.log('✅ PostgreSQL connected successfully');
+        console.log(`✅ ${dbStatus.provider || 'PostgreSQL'} connected successfully`);
       } else {
         console.warn('⚠️  PostgreSQL connection warning:', dbStatus.message);
-        console.warn('   (Ensure PostgreSQL is running and credentials in .env are configured)');
+        console.warn('   (Ensure database credentials in .env are configured)');
       }
     });
 

@@ -1,326 +1,488 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Layers,
   ArrowRight,
-  Shield,
   Zap,
-  Users,
-  Database,
+  Shield,
+  Columns3,
   CheckCircle2,
-  Code2,
-  FolderKanban,
-  CheckSquare,
-  MessageSquare,
-  Bell,
-  Sparkles,
-  BarChart3,
-  GitBranch,
-  Terminal,
-  Activity,
-  Workflow
+  Clock,
+  Search,
+  Command,
+  ChevronRight,
+  Plus,
+  Flame,
+  Check,
 } from 'lucide-react';
-import { Button, Badge, Card, CardContent } from '../components/ui';
+import { Button } from '../components/ui';
+import ZetocoLogo from '../components/common/ZetocoLogo';
 import { APP_NAME, APP_TAGLINE } from '../constants';
-import { checkFullApiHealth } from '../services/healthService';
 
 export default function LandingPage() {
-  const [systemHealth, setSystemHealth] = useState(null);
-  const [loadingHealth, setLoadingHealth] = useState(true);
-
-  useEffect(() => {
-    checkFullApiHealth()
-      .then((data) => setSystemHealth(data))
-      .catch((err) => setSystemHealth(err))
-      .finally(() => setLoadingHealth(false));
-  }, []);
-
-  const features = [
-    {
-      title: 'Agile Project Tracking',
-      description: 'Structured sprint boards, backlogs, and task lifecycle management inspired by Jira and Linear.',
-      icon: FolderKanban,
-      gradient: 'from-blue-500 to-indigo-600',
-    },
-    {
-      title: 'Interactive Kanban Boards',
-      description: 'Visual status workflows with granular priority tags, deadlines, and multi-assignee tracking.',
-      icon: CheckSquare,
-      gradient: 'from-indigo-500 to-purple-600',
-    },
-    {
-      title: 'Real-Time Team Communication',
-      description: 'Dedicated topic channels, threaded discussions, and direct messages inspired by Slack.',
-      icon: MessageSquare,
-      gradient: 'from-cyan-500 to-blue-600',
-    },
-    {
-      title: 'Intelligent Notification Engine',
-      description: 'Contextual notification dispatch for task assignments, sprint deadlines, and team mentions.',
-      icon: Bell,
-      gradient: 'from-amber-500 to-rose-600',
-    },
-    {
-      title: 'Role-Based Access Control',
-      description: 'Multi-tenant organization architecture with granular admin, manager, and member permissions.',
-      icon: Shield,
-      gradient: 'from-emerald-500 to-teal-600',
-    },
-    {
-      title: 'Velocity & Project Analytics',
-      description: 'Real-time sprint velocity charts, burndown metrics, and project completion forecasting.',
-      icon: BarChart3,
-      gradient: 'from-purple-500 to-pink-600',
-    },
-  ];
-
-  const workflowSteps = [
-    { step: '01', title: 'Create Workspace', desc: 'Initialize an organization with role-based member permissions.' },
-    { step: '02', title: 'Create Project', desc: 'Define sprint cycles, roadmaps, and custom workflows.' },
-    { step: '03', title: 'Assign Tasks', desc: 'Distribute backlog items with priority matrices and due dates.' },
-    { step: '04', title: 'Collaborate', desc: 'Sync in real-time with channel discussions and live updates.' },
-    { step: '05', title: 'Track Progress', desc: 'Deliver software on schedule with analytics and Kanban boards.' },
-  ];
-
-  const plannedModules = [
-    { name: 'Phase 1: Project Foundation & Architecture', status: 'Completed', current: false },
-    { name: 'Phase 2: UI/UX Foundation & Design System', status: 'Completed', current: true },
-    { name: 'Phase 3: Database Schemas & Authentication', status: 'Planned', current: false },
-    { name: 'Phase 4: Organizations & Projects Engine', status: 'Planned', current: false },
-    { name: 'Phase 5: Tasks & Kanban Board System', status: 'Planned', current: false },
-    { name: 'Phase 6: Real-Time Team Messaging', status: 'Planned', current: false },
-    { name: 'Phase 7: Notification Dispatch & File Handling', status: 'Planned', current: false },
-    { name: 'Phase 8: Testing, CI/CD & Cloud Deployment', status: 'Planned', current: false },
-  ];
-
   return (
-    <div className="space-y-28 pb-24 overflow-hidden">
-      {/* Hero Section */}
-      <section className="relative pt-20 sm:pt-28 lg:pt-36">
-        {/* Glow Spheres */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[380px] bg-brand-600/20 blur-[140px] rounded-full pointer-events-none -z-10" />
-        <div className="absolute top-1/3 left-1/4 w-[350px] h-[220px] bg-cyan-500/15 blur-[120px] rounded-full pointer-events-none -z-10" />
+    <div className="flex-1 flex flex-col items-center justify-start relative overflow-hidden bg-[#080808]">
+      {/* Ambient Lighting & Technical Grid Background */}
+      <div
+        className="absolute inset-0 pointer-events-none -z-10"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+          maskImage: 'radial-gradient(ellipse 70% 55% at 50% 20%, #000 30%, transparent 90%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 55% at 50% 20%, #000 30%, transparent 90%)',
+        }}
+      />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-gradient-to-b from-indigo-600/20 via-violet-600/10 to-transparent blur-[140px] pointer-events-none -z-10" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Recruiter / Portfolio Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-300 text-xs font-semibold mb-8 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-brand-400" />
-            <span>Full-Stack Portfolio Project • Recruiter Demonstration</span>
-          </div>
+      {/* Top Hairline Horizon Accent */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent pointer-events-none" />
 
-          {/* Hero Headline */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
-            {APP_NAME}
-          </h1>
+      {/* Main Hero Container */}
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-20 flex flex-col items-center z-10">
+        
+        {/* Sleek Announcement Pill */}
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#111114]/90 border border-[#292930] hover:border-indigo-500/40 text-xs text-[#A1A1AA] transition-all shadow-sm hover:shadow-indigo-500/10 mb-8 backdrop-blur-md group"
+        >
+          <span className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
+          </span>
+          <span className="font-semibold text-[#F5F5F7] tracking-wide">Zetoco</span>
+          <span className="text-[#383842]">|</span>
+          <span className="text-[#A1A1AA] group-hover:text-[#F5F5F7] transition-colors">
+            The workspace for high-velocity engineering
+          </span>
+          <ChevronRight className="w-3.5 h-3.5 text-[#71717A] group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
+        </Link>
 
-          <p className="text-xl sm:text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-brand-200 to-cyan-300 mt-4 max-w-2xl mx-auto">
-            {APP_TAGLINE}
-          </p>
+        {/* Official Zetoco Logo in the Middle with Ambient Glow */}
+        <div className="relative mb-8 sm:mb-10 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 bg-indigo-600/20 blur-3xl rounded-full scale-125 pointer-events-none" />
+          <Link to="/" className="relative inline-block group">
+            <ZetocoLogo
+              size="2xl"
+              showText
+              className="drop-shadow-[0_16px_36px_rgba(0,0,0,0.8)] group-hover:scale-[1.02] transition-transform duration-300"
+              imageClassName="h-16 sm:h-20 w-auto"
+            />
+          </Link>
+        </div>
 
-          <p className="mt-6 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            A comprehensive project and team collaboration platform inspired by Jira, Trello, and Slack. 
-            Engineered to demonstrate production-grade full-stack architecture with 
-            <span className="text-slate-200 font-semibold"> React</span>, 
-            <span className="text-slate-200 font-semibold"> Express.js</span>, and 
-            <span className="text-slate-200 font-semibold"> PostgreSQL</span>.
-          </p>
+        {/* Display Typography */}
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#F5F5F7] text-center max-w-3xl leading-[1.14]">
+          The central workspace for{' '}
+          <span className="bg-gradient-to-r from-white via-[#F5F5F7] to-[#A1A1AA] bg-clip-text text-transparent">
+            clarity and velocity.
+          </span>
+        </h1>
 
-          {/* Hero CTA Buttons */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" rightIcon={ArrowRight}>
-                Get Started
-              </Button>
-            </Link>
+        <p className="mt-5 text-sm sm:text-base text-[#A1A1AA] text-center max-w-xl leading-relaxed">
+          Streamline issue tracking, interactive Kanban workflows, and real-time team collaboration in one ultra-fast, zero-noise workspace.
+        </p>
 
-            <Link to="/dashboard">
-              <Button size="lg" variant="secondary" leftIcon={Layers}>
-                Explore Demo
-              </Button>
-            </Link>
-          </div>
+        {/* Main Action Options Directly Below Logo & Copy */}
+        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
+          <Link to="/dashboard" className="w-full sm:w-auto flex-1">
+            <Button
+              size="lg"
+              fullWidth
+              rightIcon={ArrowRight}
+              className="bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold text-sm py-3 px-6 rounded-xl shadow-[0_0_24px_rgba(99,102,241,0.35)] hover:shadow-[0_0_32px_rgba(99,102,241,0.5)] border-t border-indigo-300/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Launch Workspace
+            </Button>
+          </Link>
 
-          {/* Live System Diagnostics Widget */}
-          <div className="mt-16 max-w-3xl mx-auto bg-surface-900/90 border border-surface-800 rounded-2xl p-5 shadow-2xl backdrop-blur-md text-left">
-            <div className="flex items-center justify-between border-b border-surface-800/80 pb-3 mb-4">
+          <Link to="/login" className="w-full sm:w-auto flex-1">
+            <Button
+              size="lg"
+              variant="secondary"
+              fullWidth
+              className="bg-[#111114] hover:bg-[#17171C] text-[#F5F5F7] font-semibold text-sm py-3 px-6 rounded-xl border border-[#292930] hover:border-[#383842] transition-all hover:scale-[1.01]"
+            >
+              Sign In
+            </Button>
+          </Link>
+
+          <Link to="/register" className="w-full sm:w-auto flex-1">
+            <Button
+              size="lg"
+              variant="ghost"
+              fullWidth
+              className="bg-transparent hover:bg-[#111114] text-[#A1A1AA] hover:text-[#F5F5F7] font-semibold text-sm py-3 px-6 rounded-xl border border-[#1F1F24] hover:border-[#292930] transition-all"
+            >
+              Create Account
+            </Button>
+          </Link>
+        </div>
+
+        {/* Minimalist Trust & Status Micro-Bar */}
+        <div className="mt-6 flex items-center justify-center gap-4 text-xs text-[#71717A]">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-[#A1A1AA]">Realtime WebSocket Engine</span>
+          </span>
+          <span className="text-[#292930]">•</span>
+          <span>Role-Based Access Control</span>
+          <span className="text-[#292930]">•</span>
+          <span>Zero Configuration</span>
+        </div>
+
+        {/* ============================================================ */}
+        {/* REALISTIC SAAS INTERFACE PREVIEW (High-Tier Visual Standard) */}
+        {/* ============================================================ */}
+        <div className="mt-14 sm:mt-18 w-full max-w-5xl relative group">
+          {/* Subtle Ambient Glow Behind Mockup Frame */}
+          <div className="absolute -inset-1 bg-gradient-to-b from-indigo-500/20 via-violet-500/10 to-transparent rounded-2xl blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500 -z-10" />
+
+          {/* Window Frame */}
+          <div className="w-full rounded-2xl border border-[#292930] bg-[#0B0B0E]/95 shadow-[0_25px_80px_rgba(0,0,0,0.85)] overflow-hidden backdrop-blur-xl">
+            {/* Top Window Header / Mac Chrome */}
+            <div className="px-4 py-3 bg-[#111114] border-b border-[#292930] flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-brand-400" />
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Live System & Architecture Diagnostic
+                <span className="w-3 h-3 rounded-full bg-[#EF4444]/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-[#F59E0B]/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-[#22C55E]/80 inline-block" />
+                <div className="ml-3 hidden sm:flex items-center gap-1.5 text-xs text-[#71717A]">
+                  <span className="text-[#A1A1AA] font-medium">Zetoco</span>
+                  <span>/</span>
+                  <span>Sprint #34</span>
+                  <span>/</span>
+                  <span className="text-[#F5F5F7]">Active Board</span>
+                </div>
+              </div>
+
+              {/* Command Search Preview */}
+              <div className="flex-1 max-w-xs hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-[#080808] border border-[#292930] text-xs text-[#71717A]">
+                <Search className="w-3.5 h-3.5 text-[#71717A]" />
+                <span className="text-[#71717A]">Quick search or jump to...</span>
+                <span className="ml-auto font-mono text-[10px] bg-[#17171C] px-1.5 py-0.5 rounded border border-[#292930] text-[#A1A1AA]">
+                  ⌘K
                 </span>
               </div>
-              <Badge variant="brand" size="xs" dot>Live Polling</Badge>
+
+              {/* Live Sync Status Indicator */}
+              <div className="flex items-center gap-2 text-xs">
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-emerald-400 font-medium text-[11px] hidden sm:inline">
+                  Live Sync Active
+                </span>
+              </div>
             </div>
 
-            {loadingHealth ? (
-              <div className="py-4 text-center text-xs text-slate-400 animate-pulse">
-                Querying Express REST API (/api/health/full)...
+            {/* Mockup Toolbar */}
+            <div className="px-4 sm:px-6 py-2.5 bg-[#0e0e12] border-b border-[#1F1F24] flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 sm:gap-4 text-[#A1A1AA]">
+                <span className="px-2.5 py-1 rounded-md bg-[#17171C] text-[#F5F5F7] font-medium border border-[#292930] flex items-center gap-1.5">
+                  <Columns3 className="w-3.5 h-3.5 text-indigo-400" />
+                  Board
+                </span>
+                <span className="hover:text-[#F5F5F7] transition-colors cursor-pointer hidden sm:inline">
+                  List
+                </span>
+                <span className="hover:text-[#F5F5F7] transition-colors cursor-pointer hidden sm:inline">
+                  Timeline
+                </span>
+                <span className="hover:text-[#F5F5F7] transition-colors cursor-pointer">
+                  Members (6)
+                </span>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div className="p-3.5 rounded-xl bg-surface-950/80 border border-surface-800/90">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-medium">Express REST API:</span>
-                    <Badge variant={systemHealth?.success ? 'success' : 'danger'} size="xs" dot>
-                      {systemHealth?.success ? 'Running (200 OK)' : 'Offline'}
-                    </Badge>
-                  </div>
-                  <div className="mt-2 text-slate-500 text-[11px] truncate">
-                    Endpoint: <code className="text-brand-300">/api/health</code>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-[#71717A] hidden md:inline">Showing 9 issues</span>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/30 transition-colors font-medium text-[11px]"
+                >
+                  <Plus className="w-3 h-3" />
+                  New Task
+                </Link>
+              </div>
+            </div>
+
+            {/* Mockup Kanban Columns */}
+            <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 bg-[#080808]/60">
+              {/* Column 1: Backlog / To Do */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between pb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#71717A]" />
+                    <span className="text-xs font-semibold text-[#F5F5F7]">To Do</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#17171C] border border-[#292930] text-[#71717A]">
+                      3
+                    </span>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-surface-950/80 border border-surface-800/90">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-medium">PostgreSQL Pool:</span>
-                    <Badge variant={systemHealth?.database?.connected ? 'success' : 'warning'} size="xs" dot>
-                      {systemHealth?.database?.connected ? 'Connected' : 'Configured'}
-                    </Badge>
+                {/* Card 1 */}
+                <div className="p-3.5 rounded-xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-0.5 shadow-sm">
+                  <div className="flex items-center justify-between text-[11px] text-[#71717A] mb-2">
+                    <span className="font-mono text-[10px] text-[#A1A1AA]">ZET-108</span>
+                    <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-medium text-[10px]">
+                      DevOps
+                    </span>
                   </div>
-                  <div className="mt-2 text-slate-500 text-[11px] truncate">
-                    {systemHealth?.database?.connected
-                      ? `PG: ${systemHealth?.database?.version?.substring(0, 24)}...`
-                      : 'Connection pool ready in .env'}
+                  <h4 className="text-xs font-medium text-[#F5F5F7] leading-snug">
+                    Configure GitHub webhook automation for issue linking
+                  </h4>
+                  <div className="mt-3 pt-2.5 border-t border-[#1F1F24] flex items-center justify-between text-[11px] text-[#71717A]">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Oct 18
+                    </span>
+                    <span className="w-5 h-5 rounded-full bg-indigo-900/60 border border-indigo-700/60 flex items-center justify-center text-[10px] font-bold text-indigo-300">
+                      AF
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 2 */}
+                <div className="p-3.5 rounded-xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-0.5 shadow-sm">
+                  <div className="flex items-center justify-between text-[11px] text-[#71717A] mb-2">
+                    <span className="font-mono text-[10px] text-[#A1A1AA]">ZET-114</span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium text-[10px]">
+                      Database
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-medium text-[#F5F5F7] leading-snug">
+                    Optimize PostgreSQL connection pool & RLS latencies
+                  </h4>
+                  <div className="mt-3 pt-2.5 border-t border-[#1F1F24] flex items-center justify-between text-[11px] text-[#71717A]">
+                    <span className="flex items-center gap-1 text-amber-400">
+                      <Flame className="w-3 h-3" />
+                      High Priority
+                    </span>
+                    <span className="w-5 h-5 rounded-full bg-violet-900/60 border border-violet-700/60 flex items-center justify-center text-[10px] font-bold text-violet-300">
+                      MK
+                    </span>
                   </div>
                 </div>
               </div>
-            )}
+
+              {/* Column 2: In Progress */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between pb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                    <span className="text-xs font-semibold text-[#F5F5F7]">In Progress</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-950/60 border border-indigo-800/60 text-indigo-300">
+                      2
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 3 - Active Item with Accent Border */}
+                <div className="p-3.5 rounded-xl bg-[#17171C] border border-indigo-500/40 hover:border-indigo-500/70 transition-all hover:-translate-y-0.5 shadow-md shadow-indigo-950/30">
+                  <div className="flex items-center justify-between text-[11px] text-[#71717A] mb-2">
+                    <span className="font-mono text-[10px] text-indigo-300 font-semibold">ZET-102</span>
+                    <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium text-[10px]">
+                      Realtime
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-medium text-[#F5F5F7] leading-snug">
+                    ⚡ Multi-cursor presence & live channel state streaming
+                  </h4>
+                  <div className="mt-3 pt-2.5 border-t border-[#292930] flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-1.5 text-indigo-400 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                      Streaming
+                    </span>
+                    <div className="flex -space-x-1">
+                      <span className="w-5 h-5 rounded-full bg-indigo-600 border border-[#111114] flex items-center justify-center text-[9px] font-bold text-white">
+                        JD
+                      </span>
+                      <span className="w-5 h-5 rounded-full bg-violet-600 border border-[#111114] flex items-center justify-center text-[9px] font-bold text-white">
+                        SR
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 4 */}
+                <div className="p-3.5 rounded-xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-0.5 shadow-sm">
+                  <div className="flex items-center justify-between text-[11px] text-[#71717A] mb-2">
+                    <span className="font-mono text-[10px] text-[#A1A1AA]">ZET-105</span>
+                    <span className="px-2 py-0.5 rounded bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium text-[10px]">
+                      Design
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-medium text-[#F5F5F7] leading-snug">
+                    Blackout Indigo token architecture & responsive layouts
+                  </h4>
+                  <div className="mt-3 pt-2.5 border-t border-[#1F1F24] flex items-center justify-between text-[11px] text-[#71717A]">
+                    <span className="flex items-center gap-1 text-[#A1A1AA]">
+                      <Clock className="w-3 h-3" />
+                      In Review
+                    </span>
+                    <span className="w-5 h-5 rounded-full bg-emerald-900/60 border border-emerald-700/60 flex items-center justify-center text-[10px] font-bold text-emerald-300">
+                      EM
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Column 3: Done */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between pb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    <span className="text-xs font-semibold text-[#F5F5F7]">Done</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-300">
+                      4
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 5 */}
+                <div className="p-3.5 rounded-xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-0.5 shadow-sm opacity-90">
+                  <div className="flex items-center justify-between text-[11px] text-[#71717A] mb-2">
+                    <span className="font-mono text-[10px] text-[#A1A1AA]">ZET-94</span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium text-[10px]">
+                      Security
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-medium text-[#F5F5F7] leading-snug line-through text-[#71717A]">
+                    Multi-tenant role hierarchy (Owner, Admin, Member, Viewer)
+                  </h4>
+                  <div className="mt-3 pt-2.5 border-t border-[#1F1F24] flex items-center justify-between text-[11px] text-emerald-400">
+                    <span className="flex items-center gap-1 font-medium">
+                      <Check className="w-3 h-3" />
+                      Resolved
+                    </span>
+                    <span className="text-[10px] text-[#71717A]">2h ago</span>
+                  </div>
+                </div>
+
+                {/* Card 6 */}
+                <div className="p-3.5 rounded-xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-0.5 shadow-sm opacity-90">
+                  <div className="flex items-center justify-between text-[11px] text-[#71717A] mb-2">
+                    <span className="font-mono text-[10px] text-[#A1A1AA]">ZET-91</span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium text-[10px]">
+                      Core
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-medium text-[#F5F5F7] leading-snug line-through text-[#71717A]">
+                    Interactive drag-and-drop task workflow pipeline
+                  </h4>
+                  <div className="mt-3 pt-2.5 border-t border-[#1F1F24] flex items-center justify-between text-[11px] text-emerald-400">
+                    <span className="flex items-center gap-1 font-medium">
+                      <Check className="w-3 h-3" />
+                      Resolved
+                    </span>
+                    <span className="text-[10px] text-[#71717A]">Yesterday</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Mockup Action Bar */}
+            <div className="px-6 py-3 bg-[#111114] border-t border-[#292930] flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-4 text-xs text-[#71717A]">
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 rounded bg-[#17171C] border border-[#292930] text-[#A1A1AA] font-mono text-[10px]">
+                    ⌘K
+                  </kbd>
+                  <span>Command Bar</span>
+                </span>
+                <span className="hidden sm:inline text-[#292930]">•</span>
+                <span className="hidden sm:flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 rounded bg-[#17171C] border border-[#292930] text-[#A1A1AA] font-mono text-[10px]">
+                    C
+                  </kbd>
+                  <span>New Task</span>
+                </span>
+              </div>
+
+              <Link
+                to="/dashboard"
+                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+              >
+                <span>Open Live Workspace</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* Feature Section */}
-      <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <Badge variant="brand" size="sm" className="mb-3">Comprehensive Toolset</Badge>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Designed for High-Performing Teams
-          </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-400">
-            FlowSync unifies project management, sprint planning, and team collaboration into a seamless workflow.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.title}
-                className="bg-surface-900/60 border border-surface-800/80 rounded-2xl p-6 hover:border-surface-700 transition-all hover:translate-y-[-2px] hover:shadow-card group"
-              >
-                <div
-                  className={`w-12 h-12 rounded-xl bg-gradient-to-tr ${f.gradient} flex items-center justify-center shadow-lg mb-5 group-hover:scale-105 transition-transform`}
-                >
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-base font-bold text-white mb-2">{f.title}</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">{f.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-b from-surface-900 to-surface-950 border border-surface-800 rounded-3xl p-8 sm:p-12">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <Badge variant="cyan" size="sm" className="mb-3">Streamlined Process</Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              How FlowSync Works
-            </h2>
-            <p className="mt-2 text-xs sm:text-sm text-slate-400">
-              From workspace setup to sprint completion in five simple stages.
+        {/* ============================================================ */}
+        {/* THREE CORE TECHNICAL PILLARS (Clean, Restrained, High-Impact) */}
+        {/* ============================================================ */}
+        <div className="mt-16 sm:mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+          {/* Pillar 1 */}
+          <div className="p-6 rounded-2xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-1 group">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-4 group-hover:scale-105 transition-transform">
+              <Zap className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-semibold text-[#F5F5F7] tracking-tight">
+              Sub-millisecond Realtime Sync
+            </h3>
+            <p className="mt-2 text-xs sm:text-sm text-[#A1A1AA] leading-relaxed">
+              Instant multi-user updates, live member presence, and live board transitions powered by Supabase WebSockets.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {workflowSteps.map((s, idx) => (
-              <div
-                key={s.step}
-                className="relative bg-surface-900/80 border border-surface-800/90 rounded-2xl p-5 hover:border-brand-500/50 transition-all"
-              >
-                <span className="text-2xl font-black text-brand-500/40">{s.step}</span>
-                <h4 className="text-sm font-bold text-white mt-2 mb-1">{s.title}</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
-                {idx < workflowSteps.length - 1 && (
-                  <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 text-slate-600 z-10">
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Progressive Roadmap Section */}
-      <section id="roadmap" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <Badge variant="purple" size="sm" className="mb-3">Development Roadmap</Badge>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Engineering Phases & Milestones
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm text-slate-400">
-            FlowSync follows a strict modular implementation strategy.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {plannedModules.map((item, idx) => (
-            <div
-              key={item.name}
-              className={`p-4 rounded-xl border transition-all ${
-                item.current
-                  ? 'bg-brand-950/40 border-brand-500/60 shadow-lg shadow-brand-500/10'
-                  : item.status === 'Completed'
-                  ? 'bg-emerald-950/20 border-emerald-500/30'
-                  : 'bg-surface-900/40 border-surface-800 opacity-70'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-300">Phase {idx + 1}</span>
-                <Badge
-                  variant={item.current ? 'brand' : item.status === 'Completed' ? 'success' : 'neutral'}
-                  size="xs"
-                  dot
-                >
-                  {item.status}
-                </Badge>
-              </div>
-              <p className="text-xs font-medium text-slate-200">{item.name}</p>
+          {/* Pillar 2 */}
+          <div className="p-6 rounded-2xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-1 group">
+            <div className="w-10 h-10 rounded-xl bg-violet-600/15 border border-violet-500/30 flex items-center justify-center text-violet-400 mb-4 group-hover:scale-105 transition-transform">
+              <Columns3 className="w-5 h-5" />
             </div>
-          ))}
-        </div>
-      </section>
+            <h3 className="text-base font-semibold text-[#F5F5F7] tracking-tight">
+              Interactive Kanban Pipelines
+            </h3>
+            <p className="mt-2 text-xs sm:text-sm text-[#A1A1AA] leading-relaxed">
+              Fluid drag-and-drop task workflows, priority tags, milestone tracking, and sprint planning without the bloat.
+            </p>
+          </div>
 
-      {/* Final Call to Action */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-3xl bg-gradient-to-r from-brand-900 via-indigo-900 to-surface-900 border border-brand-500/40 p-8 sm:p-14 text-center overflow-hidden shadow-2xl">
-          <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-brand-500/20 blur-3xl pointer-events-none rounded-full" />
-
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Bring your team's work together.
-          </h2>
-          <p className="mt-3 text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
-            Experience how FlowSync coordinates tasks, sprints, channels, and team velocity in one modern workspace.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" rightIcon={ArrowRight}>
-                Start with FlowSync
-              </Button>
-            </Link>
-            <Link to="/dashboard">
-              <Button size="lg" variant="secondary">
-                Explore Demo Dashboard
-              </Button>
-            </Link>
+          {/* Pillar 3 */}
+          <div className="p-6 rounded-2xl bg-[#111114] border border-[#292930] hover:border-[#383842] transition-all hover:-translate-y-1 group">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-105 transition-transform">
+              <Shield className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-semibold text-[#F5F5F7] tracking-tight">
+              Role-Based Governance
+            </h3>
+            <p className="mt-2 text-xs sm:text-sm text-[#A1A1AA] leading-relaxed">
+              Multi-tenant workspace isolation with granular Owner, Admin, Member, and Viewer permissions backed by PostgreSQL RLS.
+            </p>
           </div>
         </div>
-      </section>
+
+        {/* Developer / High-Velocity Team Keyboard Reference */}
+        <div className="mt-14 sm:mt-18 flex flex-wrap items-center justify-center gap-6 text-xs text-[#71717A]">
+          <span className="flex items-center gap-1.5">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#17171C] border border-[#292930] text-[#A1A1AA] font-mono text-[10px]">
+              ⌘
+            </kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#17171C] border border-[#292930] text-[#A1A1AA] font-mono text-[10px]">
+              K
+            </kbd>
+            <span>Command Menu</span>
+          </span>
+          <span className="text-[#292930]">•</span>
+          <span className="flex items-center gap-1.5">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#17171C] border border-[#292930] text-[#A1A1AA] font-mono text-[10px]">
+              C
+            </kbd>
+            <span>Create Task</span>
+          </span>
+          <span className="text-[#292930]">•</span>
+          <span className="flex items-center gap-1.5">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#17171C] border border-[#292930] text-[#A1A1AA] font-mono text-[10px]">
+              G
+            </kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#17171C] border border-[#292930] text-[#A1A1AA] font-mono text-[10px]">
+              B
+            </kbd>
+            <span>Jump to Board</span>
+          </span>
+        </div>
+
+      </div>
     </div>
   );
 }

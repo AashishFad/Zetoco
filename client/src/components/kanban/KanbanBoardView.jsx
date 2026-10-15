@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Plus,
   MoreHorizontal,
@@ -8,260 +8,527 @@ import {
   MessageSquare,
   AlertCircle,
   Filter,
-  Search
+  Search,
+  CheckCircle2,
+  Clock,
+  User,
+  GripVertical,
+  ChevronsUp,
+  ChevronUp,
+  Minus,
+  ChevronDown,
+  Bookmark,
 } from 'lucide-react';
-import { Badge, Avatar, Button, Input, useToast } from '../ui';
+import { Badge, Avatar, Button, Input, Select, useToast } from '../ui';
+import CreateTaskModal from '../modals/CreateTaskModal';
+import TaskDetailsModal from '../modals/TaskDetailsModal';
+import * as taskService from '../../services/taskService';
+import { useAuth } from '../../context/AuthContext';
+import { useOrganization } from '../../context/OrganizationContext';
 
-export default function KanbanBoardView({ onAddTask }) {
-  const [search, setSearch] = useState('');
+const COLUMNS = [
+  { id: 'backlog', title: 'Backlog', dotColor: '#52525B' },
+  { id: 'todo', title: 'To Do', dotColor: '#71717A' },
+  { id: 'in_progress', title: 'In Progress', dotColor: '#6366F1' },
+  { id: 'review', title: 'In Review', dotColor: '#818CF8' },
+  { id: 'done', title: 'Done', dotColor: '#10B981' },
+];
+
+export default function KanbanBoardView({
+  projectId,
+  projectMembers = [],
+  initialTasks = null,
+  onTaskCountChange,
+}) {
+  const { user } = useAuth();
+  const { can, members: orgMembers } = useOrganization();
   const { addToast } = useToast();
 
-  // Section 13 Requirements: BACKLOG, TODO, IN PROGRESS, REVIEW, DONE
-  const initialColumns = [
-    {
-      id: 'BACKLOG',
-      title: 'BACKLOG',
-      color: 'border-t-slate-500',
-      badgeColor: 'neutral',
-      cards: [
-        {
-          id: 'FS-105',
-          title: 'Build Product Search & Filters',
-          priority: 'MEDIUM',
-          priorityVariant: 'warning',
-          assignee: 'Dhruv Mehta',
-          labels: ['Search', 'Frontend'],
-          dueDate: 'Oct 12',
-          comments: 2,
-          attachments: 1,
-        },
-        {
-          id: 'FS-106',
-          title: 'Automated E2E Test Suite Setup',
-          priority: 'LOW',
-          priorityVariant: 'neutral',
-          assignee: 'Priya Patel',
-          labels: ['QA', 'Testing'],
-          dueDate: 'Oct 15',
-          comments: 0,
-          attachments: 0,
-        },
-      ],
-    },
-    {
-      id: 'TODO',
-      title: 'TODO',
-      color: 'border-t-sky-500',
-      badgeColor: 'brand',
-      cards: [
-        {
-          id: 'FS-104',
-          title: 'Navbar Redesign with Tailwind Tokens',
-          priority: 'LOW',
-          priorityVariant: 'neutral',
-          assignee: 'Sarah Jenkins',
-          labels: ['UI/UX', 'Design'],
-          dueDate: 'Oct 08',
-          comments: 4,
-          attachments: 2,
-        },
-        {
-          id: 'FS-107',
-          title: 'PostgreSQL Migration Scripts for RBAC',
-          priority: 'HIGH',
-          priorityVariant: 'danger',
-          assignee: 'Aashish Lead',
-          labels: ['Database', 'Security'],
-          dueDate: 'Oct 09',
-          comments: 1,
-          attachments: 0,
-        },
-      ],
-    },
-    {
-      id: 'IN_PROGRESS',
-      title: 'IN PROGRESS',
-      color: 'border-t-brand-500',
-      badgeColor: 'brand',
-      cards: [
-        {
-          id: 'FS-103',
-          title: 'Payment Integration (Stripe Webhooks)',
-          priority: 'HIGH',
-          priorityVariant: 'danger',
-          assignee: 'Rahul Sharma',
-          labels: ['Backend', 'Billing'],
-          dueDate: 'Tomorrow',
-          comments: 6,
-          attachments: 3,
-        },
-        {
-          id: 'FS-108',
-          title: 'Real-Time WebSocket Protocol Definition',
-          priority: 'HIGH',
-          priorityVariant: 'danger',
-          assignee: 'Aashish Lead',
-          labels: ['Architecture', 'WebSockets'],
-          dueDate: 'Oct 11',
-          comments: 3,
-          attachments: 1,
-        },
-      ],
-    },
-    {
-      id: 'REVIEW',
-      title: 'REVIEW',
-      color: 'border-t-amber-500',
-      badgeColor: 'warning',
-      cards: [
-        {
-          id: 'FS-101',
-          title: 'Implement Login API & JWT Middleware',
-          priority: 'HIGH',
-          priorityVariant: 'danger',
-          assignee: 'Rahul Sharma',
-          labels: ['Backend', 'Auth'],
-          dueDate: 'Today',
-          comments: 8,
-          attachments: 2,
-        },
-      ],
-    },
-    {
-      id: 'DONE',
-      title: 'DONE',
-      color: 'border-t-emerald-500',
-      badgeColor: 'success',
-      cards: [
-        {
-          id: 'FS-100',
-          title: 'Project Architecture & Express Boilerplate',
-          priority: 'HIGH',
-          priorityVariant: 'brand',
-          assignee: 'Aashish Lead',
-          labels: ['DevOps', 'Foundation'],
-          dueDate: 'Completed',
-          comments: 5,
-          attachments: 4,
-        },
-      ],
-    },
-  ];
+  const allEligibleMembers = useMemo(() => {
+    const userMap = new Map();
+    (orgMembers || []).forEach((m) => {
+      const id = m.userId || m.user_id || m.id;
+      if (id) userMap.set(id, m);
+    });
+    (projectMembers || []).forEach((m) => {
+      const id = m.userId || m.user_id || m.id;
+      if (id && !userMap.has(id)) {
+        userMap.set(id, m);
+      }
+    });
+    return Array.from(userMap.values());
+  }, [orgMembers, projectMembers]);
+
+  const [tasks, setTasks] = useState(initialTasks || []);
+  const [loading, setLoading] = useState(!initialTasks || initialTasks.length === 0);
+  const [search, setSearch] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('ALL');
+  const [assigneeFilter, setAssigneeFilter] = useState('ALL');
+
+  // Drag and Drop state
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
+
+  // Modals state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createColumnTarget, setCreateColumnTarget] = useState('todo');
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // Stable ref for parent callback to avoid re-triggering fetch loops
+  const onTaskCountChangeRef = useRef(onTaskCountChange);
+  useEffect(() => {
+    onTaskCountChangeRef.current = onTaskCountChange;
+  }, [onTaskCountChange]);
+
+  const currentProjectIdRef = useRef(projectId);
+  const isInitialMountRef = useRef(true);
+
+  const fetchTasks = useCallback(async (showSkeleton = false) => {
+    if (!projectId) return;
+    if (showSkeleton) {
+      setLoading(true);
+    }
+    currentProjectIdRef.current = projectId;
+
+    try {
+      const data = await taskService.getTasksByProject(projectId);
+      setTasks(data || []);
+      if (onTaskCountChangeRef.current) {
+        onTaskCountChangeRef.current((data || []).length);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch tasks:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    if (projectId) {
+      const isNewProject = currentProjectIdRef.current !== projectId;
+      const isFirst = isInitialMountRef.current || isNewProject;
+      isInitialMountRef.current = false;
+
+      // Only show skeleton if we have no tasks for this project yet
+      const needsSkeleton = isFirst && (!initialTasks || initialTasks.length === 0);
+      fetchTasks(needsSkeleton);
+    }
+  }, [projectId, fetchTasks]);
+
+  // Keep tasks synced if parent updates initialTasks
+  useEffect(() => {
+    if (initialTasks && Array.isArray(initialTasks) && initialTasks.length > 0) {
+      setTasks(initialTasks);
+      setLoading(false);
+    }
+  }, [initialTasks]);
+
+  // Filter tasks
+  const filteredTasks = useMemo(() => {
+    return (tasks || []).filter((t) => {
+      if (!t) return false;
+      const titleStr = typeof t.title === 'string' ? t.title : '';
+      const descStr = typeof t.description === 'string' ? t.description : '';
+      const searchStr = (search || '').toLowerCase();
+      const matchesSearch =
+        !searchStr ||
+        titleStr.toLowerCase().includes(searchStr) ||
+        descStr.toLowerCase().includes(searchStr);
+
+      const matchesPriority = priorityFilter === 'ALL' || t.priority === priorityFilter;
+
+      let matchesAssignee = true;
+      if (assigneeFilter === 'UNASSIGNED') {
+        matchesAssignee = !t.assigned_to;
+      } else if (assigneeFilter !== 'ALL') {
+        matchesAssignee = t.assigned_to === assigneeFilter;
+      }
+
+      return matchesSearch && matchesPriority && matchesAssignee;
+    });
+  }, [tasks, search, priorityFilter, assigneeFilter]);
+
+  // Group tasks by column
+  const tasksByColumn = useMemo(() => {
+    const map = {
+      backlog: [],
+      todo: [],
+      in_progress: [],
+      review: [],
+      done: [],
+    };
+
+    filteredTasks.forEach((t) => {
+      const col = t.status || 'todo';
+      if (map[col]) {
+        map[col].push(t);
+      } else {
+        map.todo.push(t);
+      }
+    });
+
+    // Sort each column by order_index
+    Object.keys(map).forEach((col) => {
+      map[col].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+    });
+
+    return map;
+  }, [filteredTasks]);
+
+  // Drag and Drop handlers (HTML5 Drag & Drop)
+  const handleDragStart = (e, taskId) => {
+    setDraggedTaskId(taskId);
+    e.dataTransfer.setData('text/plain', taskId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, columnId) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverColumn !== columnId) {
+      setDragOverColumn(columnId);
+    }
+  };
+
+  const handleDragLeave = (e, columnId) => {
+    if (dragOverColumn === columnId) {
+      setDragOverColumn(null);
+    }
+  };
+
+  const handleDrop = async (e, targetColumnId) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+
+    const taskId = e.dataTransfer.getData('text/plain') || draggedTaskId;
+    if (!taskId) return;
+
+    const targetTask = tasks.find((t) => t.id === taskId);
+    if (!targetTask) return;
+
+    if (targetTask.status === targetColumnId) {
+      return;
+    }
+
+    // Compute next order index in the target column
+    const columnTasks = tasks.filter((t) => t.status === targetColumnId);
+    const nextOrder =
+      columnTasks.length > 0
+        ? Math.max(...columnTasks.map((t) => t.order_index || 0)) + 1
+        : 1;
+
+    // Optimistic UI update
+    const previousTasks = [...tasks];
+    const updatedTasks = tasks.map((t) =>
+      t.id === taskId ? { ...t, status: targetColumnId, order_index: nextOrder } : t
+    );
+    setTasks(updatedTasks);
+
+    // Persist to backend / Supabase
+    const res = await taskService.updateTask(taskId, {
+      status: targetColumnId,
+      order_index: nextOrder,
+    });
+
+    if (res.success) {
+      addToast(`Moved to ${targetColumnId.replace('_', ' ')}`, 'info');
+    } else {
+      // Rollback on failure
+      setTasks(previousTasks);
+      addToast(res.error || 'Failed to update task status', 'error');
+    }
+
+    setDraggedTaskId(null);
+  };
+
+  const handleCardClick = (task) => {
+    setSelectedTask(task);
+    setIsDetailsOpen(true);
+  };
+
+  const handleOpenCreateInColumn = (columnId) => {
+    setCreateColumnTarget(columnId);
+    setIsCreateOpen(true);
+  };
+
+  const handleTaskCreated = (newTask) => {
+    setTasks((prev) => [newTask, ...prev]);
+    if (onTaskCountChange) onTaskCountChange(tasks.length + 1);
+  };
+
+  const handleTaskUpdated = (updatedTask) => {
+    setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+    setSelectedTask(updatedTask);
+  };
+
+  const handleTaskDeleted = (deletedTaskId) => {
+    setTasks((prev) => prev.filter((t) => t.id !== deletedTaskId));
+    if (onTaskCountChange) onTaskCountChange(Math.max(0, tasks.length - 1));
+  };
+
+  // Jira Priority Icon and Badge
+  const renderPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'urgent':
+        return (
+          <div className="flex items-center gap-1 text-rose-400 font-bold" title="Urgent / Highest Priority">
+            <ChevronsUp className="w-3.5 h-3.5 text-rose-500" />
+            <span className="text-[10px] uppercase">URGENT</span>
+          </div>
+        );
+      case 'high':
+        return (
+          <div className="flex items-center gap-1 text-orange-400 font-bold" title="High Priority">
+            <ChevronUp className="w-3.5 h-3.5 text-orange-400" />
+            <span className="text-[10px] uppercase">HIGH</span>
+          </div>
+        );
+      case 'medium':
+        return (
+          <div className="flex items-center gap-1 text-amber-400 font-medium" title="Medium Priority">
+            <Minus className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[10px] uppercase">MED</span>
+          </div>
+        );
+      case 'low':
+        return (
+          <div className="flex items-center gap-1 text-emerald-400 font-medium" title="Low Priority">
+            <ChevronDown className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-[10px] uppercase">LOW</span>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex items-center gap-1 text-slate-400">
+            <Minus className="w-3.5 h-3.5 text-slate-500" />
+            <span className="text-[10px] uppercase">MED</span>
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="space-y-4">
       {/* Board Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface-900/80 p-3.5 rounded-2xl border border-surface-800">
-        <div className="w-full sm:w-72">
-          <Input
-            placeholder="Filter tasks in board..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            leftIcon={Search}
-          />
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#111114] p-3 rounded-lg border border-[#292930]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 max-w-xl">
+          <div className="w-full sm:w-64">
+            <Input
+              placeholder="Search issues..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={Search}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              options={[
+                { label: 'All Priorities', value: 'ALL' },
+                { label: 'Urgent (Highest)', value: 'urgent' },
+                { label: 'High', value: 'high' },
+                { label: 'Medium', value: 'medium' },
+                { label: 'Low', value: 'low' },
+              ]}
+            />
+
+            <Select
+              value={assigneeFilter}
+              onChange={(e) => setAssigneeFilter(e.target.value)}
+              options={[
+                { label: 'All Assignees', value: 'ALL' },
+                { label: 'Unassigned', value: 'UNASSIGNED' },
+                ...allEligibleMembers.filter(Boolean).map((m) => ({
+                  label: m.fullName || m.full_name || 'Member',
+                  value: m.userId || m.user_id || m.id,
+                })),
+              ]}
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          <Badge variant="brand" size="sm">
-            Phase 2 Visual Kanban (Drag-and-Drop arrives in Phase 7)
-          </Badge>
-          <Button size="xs" leftIcon={Plus} onClick={onAddTask}>
-            Add Card
+        <div className="flex items-center gap-2.5 justify-end">
+          <span className="text-xs font-medium text-[#A1A1AA] px-2.5 py-1 bg-[#17171C] rounded-md border border-[#1F1F24]">
+            {filteredTasks.length} {filteredTasks.length === 1 ? 'Issue' : 'Issues'}
+          </span>
+
+          <Button
+            size="xs"
+            leftIcon={Plus}
+            onClick={() => handleOpenCreateInColumn('todo')}
+          >
+            Create Issue
           </Button>
         </div>
       </div>
 
-      {/* 5-Column Kanban Board Grid (Horizontal Scroll on Small Screens) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
-        {initialColumns.map((col) => {
-          const filteredCards = col.cards.filter((c) =>
-            c.title.toLowerCase().includes(search.toLowerCase())
-          );
-
-          return (
+      {/* Loading Skeleton */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          {COLUMNS.map((col) => (
             <div
               key={col.id}
-              className={`bg-surface-900/60 border border-surface-800 rounded-2xl p-3.5 flex flex-col min-h-[500px] border-t-4 ${col.color}`}
+              className="bg-[#0B0B0E] rounded-lg p-3 min-h-[450px] border border-[#1F1F24] animate-pulse space-y-3"
             >
-              {/* Column Header */}
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-surface-800/80">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-                    {col.title}
-                  </h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-surface-800 text-slate-400">
-                    {filteredCards.length}
-                  </span>
+              <div className="h-5 bg-[#17171C] rounded w-2/3 mb-3" />
+              <div className="h-24 bg-[#17171C] rounded-md border border-[#1F1F24]" />
+              <div className="h-24 bg-[#17171C] rounded-md border border-[#1F1F24]" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 5-Column Kanban Board Grid */}
+      {!loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 overflow-x-auto pb-4 items-start min-w-full">
+          {COLUMNS.map((col) => {
+            const columnTasks = tasksByColumn[col.id] || [];
+            const isDropTarget = dragOverColumn === col.id;
+
+            return (
+              <div
+                key={col.id}
+                onDragOver={(e) => handleDragOver(e, col.id)}
+                onDragLeave={(e) => handleDragLeave(e, col.id)}
+                onDrop={(e) => handleDrop(e, col.id)}
+                className={`bg-[#0B0B0E] border rounded-lg p-2.5 flex flex-col min-h-[540px] transition-all ${
+                  isDropTarget
+                    ? 'border-indigo-500/60 bg-[#111114] ring-1 ring-indigo-500/30'
+                    : 'border-[#1F1F24]'
+                }`}
+              >
+                {/* Column Header */}
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#1F1F24]">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: col.dotColor }}
+                    />
+                    <span className="text-xs font-medium text-[#F5F5F7]">
+                      {col.title}
+                    </span>
+                    <span className="text-[11px] font-medium px-1.5 py-0.2 rounded bg-[#17171C] text-[#71717A] border border-[#1F1F24]">
+                      {columnTasks.length}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => handleOpenCreateInColumn(col.id)}
+                    className="p-1 rounded-md text-[#71717A] hover:text-[#F5F5F7] hover:bg-[#17171C] transition-colors"
+                    title={`Create Issue in ${col.title}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
-                <button
-                  onClick={onAddTask}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-surface-800 transition-colors"
-                  title="Add Task to Column"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Cards Container */}
-              <div className="space-y-3 flex-1">
-                {filteredCards.map((card) => (
-                  <div
-                    key={card.id}
-                    onClick={() => addToast(`Selected card ${card.id}: ${card.title}`, 'info')}
-                    className="p-3.5 rounded-xl bg-surface-950 border border-surface-800/90 hover:border-brand-500/60 hover:shadow-card transition-all cursor-pointer group space-y-3"
-                  >
-                    {/* Top row: ID & Priority */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-slate-500 group-hover:text-brand-300">
-                        {card.id}
+                {/* Cards Container */}
+                <div className="space-y-2 flex-1">
+                  {columnTasks.length === 0 ? (
+                    <div className="h-28 border border-dashed border-[#1F1F24] rounded-md flex items-center justify-center text-center p-3">
+                      <span className="text-[11px] text-[#71717A]">
+                        {isDropTarget ? 'Drop issue here' : 'No issues'}
                       </span>
-                      <Badge variant={card.priorityVariant} size="xs">
-                        {card.priority}
-                      </Badge>
                     </div>
+                  ) : (
+                    columnTasks.map((task) => {
+                      const isOverdue =
+                        task.due_date &&
+                        task.status !== 'done' &&
+                        new Date(task.due_date) < new Date();
 
-                    {/* Title */}
-                    <h4 className="text-xs font-semibold text-slate-200 group-hover:text-white leading-snug">
-                      {card.title}
-                    </h4>
+                      const isDragging = draggedTaskId === task.id;
+                      const issueKey = task.id ? `ZET-${task.id.substring(0, 4).toUpperCase()}` : 'ZET-TASK';
 
-                    {/* Labels */}
-                    <div className="flex flex-wrap gap-1">
-                      {card.labels.map((lbl) => (
-                        <span
-                          key={lbl}
-                          className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-surface-900 text-slate-400 border border-surface-800"
+                      return (
+                        <div
+                          key={task.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, task.id)}
+                          onClick={() => handleCardClick(task)}
+                          className={`p-3 rounded-md bg-[#17171C] hover:bg-[#202027] border transition-all cursor-grab active:cursor-grabbing group space-y-2 shadow-sm ${
+                            isDragging
+                              ? 'opacity-40 border-indigo-500'
+                              : 'border-[#292930] hover:border-[#3D3D48]'
+                          }`}
                         >
-                          {lbl}
-                        </span>
-                      ))}
-                    </div>
+                          {/* Top Row: Issue Key & Priority */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono font-medium text-[#A1A1AA] bg-[#111114] px-1.5 py-0.5 rounded border border-[#1F1F24] group-hover:text-indigo-400">
+                              {issueKey}
+                            </span>
 
-                    {/* Bottom row: Due date, comments, assignee */}
-                    <div className="pt-2 border-t border-surface-850 flex items-center justify-between text-[11px] text-slate-500">
-                      <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-500" />
-                          {card.dueDate}
-                        </span>
-                        {card.comments > 0 && (
-                          <span className="flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3 text-slate-500" />
-                            {card.comments}
-                          </span>
-                        )}
-                      </div>
+                            <div className="flex items-center gap-1.5">
+                              {renderPriorityIcon(task.priority)}
+                              <GripVertical className="w-3 h-3 text-[#71717A] group-hover:text-[#A1A1AA] transition-colors shrink-0" />
+                            </div>
+                          </div>
 
-                      <Avatar name={card.assignee} size="xs" />
-                    </div>
-                  </div>
-                ))}
+                          {/* Issue Title */}
+                          <h4 className="text-xs font-medium text-[#F5F5F7] leading-snug line-clamp-2">
+                            {task.title}
+                          </h4>
+
+                          {/* Bottom Row: Due date & Assignee */}
+                          <div className="pt-2 border-t border-[#1F1F24] flex items-center justify-between text-[11px]">
+                            {task.due_date ? (
+                              <span
+                                className={`flex items-center gap-1 text-[10px] font-normal ${
+                                  isOverdue
+                                    ? 'text-red-400 font-medium'
+                                    : 'text-[#71717A]'
+                                }`}
+                              >
+                                <Calendar className="w-3 h-3 text-[#71717A]" />
+                                <span>
+                                  {new Date(task.due_date).toLocaleDateString(undefined, {
+                                    month: 'short',
+                                    day: 'numeric',
+                                  })}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-[#71717A]">No due date</span>
+                            )}
+
+                            <div
+                              className="flex items-center gap-1.5"
+                              title={task.assigneeName || 'Unassigned'}
+                            >
+                              <Avatar name={task.assigneeName || 'Unassigned'} size="xs" />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modals */}
+      <CreateTaskModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        projectId={projectId}
+        initialStatus={createColumnTarget}
+        projectMembers={allEligibleMembers}
+        onTaskCreated={handleTaskCreated}
+      />
+
+      <TaskDetailsModal
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+        task={selectedTask}
+        projectMembers={allEligibleMembers}
+        onTaskUpdated={handleTaskUpdated}
+        onTaskDeleted={handleTaskDeleted}
+      />
     </div>
   );
 }

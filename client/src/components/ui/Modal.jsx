@@ -40,22 +40,22 @@ export default function Modal({
 
       {/* Modal Dialog Card */}
       <div
-        className={`relative w-full ${maxWidth} bg-surface-900 border border-surface-700/80 rounded-2xl shadow-2xl overflow-hidden z-10 animate-slide-down`}
+        className={`relative w-full ${maxWidth} bg-[#17171C] border border-[#292930] rounded-xl shadow-2xl overflow-hidden z-10 animate-slide-down`}
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-5 sm:p-6 border-b border-surface-800/80">
+        <div className="flex items-start justify-between p-5 sm:p-6 border-b border-[#1F1F24]">
           <div>
-            {title && <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>}
-            {description && <p className="text-xs text-slate-400 mt-1">{description}</p>}
+            {title && <h3 className="text-base font-semibold text-[#F5F5F7] tracking-tight">{title}</h3>}
+            {description && <p className="text-xs text-[#A1A1AA] mt-1">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-surface-800 transition-colors"
+            className="p-1.5 rounded-md text-[#71717A] hover:text-[#F5F5F7] hover:bg-[#202027] transition-colors"
             aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -64,7 +64,7 @@ export default function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="p-4 sm:p-6 pt-3 bg-surface-950/60 border-t border-surface-800 flex items-center justify-end gap-3">
+          <div className="p-4 sm:p-5 pt-3 bg-[#111114] border-t border-[#1F1F24] flex items-center justify-end gap-3">
             {footer}
           </div>
         )}

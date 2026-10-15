@@ -22,29 +22,46 @@ import {
   PanelLeft,
   Plus,
   Shield,
-  Sparkles,
   ExternalLink,
-  Check
+  Check,
+  Building,
+  Crown,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import ApiStatusBadge from '../components/common/ApiStatusBadge';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 import { Avatar, Badge, Dropdown, DropdownItem, DropdownDivider, Button, useToast } from '../components/ui';
 import CreateTaskModal from '../components/modals/CreateTaskModal';
 import CreateProjectModal from '../components/modals/CreateProjectModal';
+import CreateOrganizationModal from '../components/modals/CreateOrganizationModal';
 import { useAuth } from '../context/AuthContext';
+import { useOrganization } from '../context/OrganizationContext';
+import { useProject } from '../context/ProjectContext';
+import { useNotifications } from '../context/NotificationContext';
+import { useTheme } from '../context/ThemeContext';
+import ZetocoLogo from '../components/common/ZetocoLogo';
 import { APP_NAME } from '../constants';
+import { ROLE_LABELS, ROLE_BADGE_VARIANTS } from '../constants/permissions';
 
 export default function DashboardLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [createOrgOpen, setCreateOrgOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
+  const { organizations, currentOrganization, currentRole, can, switchOrganization } = useOrganization();
+  const { refreshProjects } = useProject();
+  const { notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useNotifications();
+  const { isDark, toggleTheme } = useTheme();
 
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'FlowSync User';
-  const displayEmail = user?.email || 'user@flowsync.dev';
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Zetoco Member';
+  const displayEmail = user?.email || 'user@zetoco.com';
+  const orgInitials = currentOrganization?.name ? currentOrganization.name.substring(0, 2).toUpperCase() : 'ZT';
 
   const handleSignOut = async () => {
     await signOut();
@@ -57,8 +74,13 @@ export default function DashboardLayout() {
     { name: 'Projects', icon: FolderKanban, href: '/projects' },
     { name: 'My Tasks', icon: CheckSquare, href: '/tasks' },
     { name: 'Team', icon: Users, href: '/team' },
-    { name: 'Messages', icon: MessageSquare, href: '/messages', badge: '3' },
-    { name: 'Notifications', icon: Bell, href: '/notifications', badge: '4' },
+    { name: 'Messages', icon: MessageSquare, href: '/messages' },
+    {
+      name: 'Notifications',
+      icon: Bell,
+      href: '/notifications',
+      badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : String(unreadCount)) : null,
+    },
   ];
 
   const workspaceNav = [
@@ -71,20 +93,25 @@ export default function DashboardLayout() {
     { name: 'Profile', icon: User, href: '/profile' },
   ];
 
-  const mockNotifications = [
-    { id: 1, title: 'Rahul assigned you a task', desc: 'Implement Login API in FlowSync Core', time: '5m ago', unread: true },
-    { id: 2, title: 'Priya mentioned you', desc: '"Check the updated design tokens for dark theme"', time: '1h ago', unread: true },
-    { id: 3, title: 'Payment API completed', desc: 'Task moved to Done column by Dhruv', time: '2h ago', unread: false },
-  ];
-
   const isActive = (path) => {
     if (path === '/dashboard' && location.pathname === '/dashboard') return true;
     if (path !== '/dashboard' && location.pathname.startsWith(path)) return true;
     return false;
   };
 
+  const formatDropdownTime = (dateString) => {
+    if (!dateString) return 'Recently';
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return 'Recently';
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return 'Recently';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-surface-950 text-slate-100 flex flex-col md:flex-row antialiased">
+    <div className="min-h-screen bg-[#080808] text-[#F5F5F7] flex flex-col md:flex-row antialiased">
       {/* Mobile Backdrop */}
       {mobileSidebarOpen && (
         <div
@@ -95,27 +122,19 @@ export default function DashboardLayout() {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:sticky top-0 z-50 h-screen bg-surface-900 border-r border-surface-800 flex flex-col transition-all duration-300 ease-in-out ${
-          collapsed ? 'w-20' : 'w-64'
+        className={`fixed md:sticky top-0 z-50 h-screen bg-[#0B0B0E] border-r border-[#292930] flex flex-col transition-all duration-200 ease-in-out ${
+          collapsed ? 'w-16' : 'w-60'
         } ${
-          mobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'
+          mobileSidebarOpen ? 'translate-x-0 w-60' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-4 border-b border-surface-800 flex items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-500 flex items-center justify-center shrink-0 shadow-md shadow-brand-600/30">
-              <Layers className="w-5 h-5 text-white" />
-            </div>
-            {(!collapsed || mobileSidebarOpen) && (
-              <div className="flex flex-col truncate">
-                <span className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
-                  {APP_NAME}
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-300 border border-brand-500/30 uppercase">
-                    PRO
-                  </span>
-                </span>
-              </div>
+        <div className="h-12 px-3.5 border-b border-[#292930] flex items-center justify-between bg-[#0B0B0E]">
+          <Link to="/dashboard" className="flex items-center gap-2.5 overflow-hidden py-1">
+            {collapsed && !mobileSidebarOpen ? (
+              <ZetocoLogo size="sm" symbolOnly className="hover:scale-105 transition-transform" />
+            ) : (
+              <ZetocoLogo size="sm" showText className="hover:opacity-90 transition-opacity" />
             )}
           </Link>
 
@@ -123,13 +142,13 @@ export default function DashboardLayout() {
           <div className="flex items-center">
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="md:hidden text-slate-400 hover:text-white p-1"
+              className="md:hidden text-[#71717A] hover:text-[#F5F5F7] p-1"
             >
               <X className="w-5 h-5" />
             </button>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="hidden md:flex text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-surface-800 transition-colors"
+              className="hidden md:flex text-[#71717A] hover:text-[#F5F5F7] p-1 rounded hover:bg-[#17171C] transition-colors"
               title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             >
               {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
@@ -137,55 +156,84 @@ export default function DashboardLayout() {
           </div>
         </div>
 
-        {/* Workspace Switcher */}
+        {/* Dynamic Organization Switcher */}
         {(!collapsed || mobileSidebarOpen) && (
-          <div className="p-3 border-b border-surface-800/80">
+          <div className="p-2 border-b border-[#292930]">
             <Dropdown
-              width="w-56"
+              width="w-full"
+              align="left"
+              className="w-full block"
               trigger={
-                <div className="w-full bg-surface-950/60 hover:bg-surface-800/80 rounded-xl p-2.5 border border-surface-800/80 flex items-center justify-between transition-colors cursor-pointer group">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-brand-500/20 text-brand-300 flex items-center justify-center text-xs font-bold shrink-0 border border-brand-500/30">
-                      FS
+                <div className="w-full bg-[#111114] hover:bg-[#17171C] rounded-md p-2 border border-[#292930] hover:border-[#383842] flex items-center justify-between transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-5 h-5 rounded bg-[#17171C] text-[#F5F5F7] border border-[#292930] flex items-center justify-center text-[10px] font-semibold shrink-0">
+                      {orgInitials}
                     </div>
                     <div className="text-left truncate">
-                      <p className="text-xs font-semibold text-slate-200 truncate group-hover:text-white">
-                        Acme Engineering
+                      <p className="text-xs font-medium text-[#F5F5F7] truncate">
+                        {currentOrganization?.name || 'No Organization'}
                       </p>
-                      <p className="text-[10px] text-slate-400">Team Workspace</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${currentRole === 'admin' ? 'bg-amber-400' : 'bg-indigo-400'}`} />
+                        <span className="text-[10px] text-[#71717A] font-normal">
+                          {ROLE_LABELS[currentRole] || 'Workspace'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#71717A] shrink-0" />
                 </div>
               }
             >
-              <div className="px-3 py-2 border-b border-surface-800">
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Workspaces</p>
+              <div className="px-3 py-1.5 border-b border-[#1F1F24] flex items-center justify-between">
+                <p className="text-[10px] font-semibold text-[#71717A] uppercase tracking-wider">Workspaces</p>
+                <span className="text-[10px] text-[#71717A] font-mono">{organizations.length}</span>
               </div>
-              <DropdownItem icon={Check} onClick={() => addToast('Switched to Acme Engineering', 'info')}>
-                Acme Engineering
-              </DropdownItem>
-              <DropdownItem onClick={() => addToast('Switched to Mobile App Team', 'info')}>
-                Mobile App Team
-              </DropdownItem>
+              
+              <div className="max-h-48 overflow-y-auto py-1">
+                {organizations.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-surface-400">
+                    No organizations yet
+                  </div>
+                ) : (
+                  organizations.map((org) => {
+                    const isSelected = currentOrganization?.id === org.id;
+                    return (
+                      <DropdownItem
+                        key={org.id}
+                        icon={isSelected ? Check : undefined}
+                        onClick={() => {
+                          switchOrganization(org.id);
+                          addToast(`Switched to "${org.name}"`, 'info');
+                        }}
+                      >
+                        <span className={isSelected ? 'text-indigo-400 font-semibold' : ''}>
+                          {org.name}
+                        </span>
+                      </DropdownItem>
+                    );
+                  })
+                )}
+              </div>
+
               <DropdownDivider />
-              <DropdownItem icon={Plus} onClick={() => setCreateProjectOpen(true)}>
-                Create Workspace
+              <DropdownItem icon={Plus} onClick={() => setCreateOrgOpen(true)}>
+                New Workspace
               </DropdownItem>
             </Dropdown>
           </div>
         )}
 
         {/* Navigation Section */}
-        <div className="flex-1 p-3 space-y-6 overflow-y-auto">
+        <div className="flex-1 p-2 space-y-4 overflow-y-auto">
           {/* Main Group */}
           <div>
             {(!collapsed || mobileSidebarOpen) && (
-              <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Main
+              <p className="px-2.5 text-[10px] font-semibold text-[#71717A] uppercase tracking-wider mb-1.5">
+                Planning
               </p>
             )}
-            <nav className="space-y-1">
+            <nav className="space-y-0.5">
               {mainNav.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -194,25 +242,19 @@ export default function DashboardLayout() {
                     key={item.name}
                     to={item.href}
                     onClick={() => setMobileSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all group ${
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-medium transition-colors group ${
                       active
-                        ? 'bg-brand-600 text-white shadow-md shadow-brand-600/20'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-surface-800/80'
+                        ? 'bg-[#17171C] text-[#F5F5F7] border-l-2 border-indigo-500 rounded-r-md rounded-l-none'
+                        : 'text-[#A1A1AA] hover:text-[#F5F5F7] hover:bg-[#17171C] rounded-md'
                     } ${collapsed && !mobileSidebarOpen ? 'justify-center px-0' : ''}`}
                     title={collapsed ? item.name : undefined}
                   >
-                    <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-indigo-400' : 'text-[#71717A] group-hover:text-[#A1A1AA]'}`} />
                     {(!collapsed || mobileSidebarOpen) && (
                       <span className="truncate flex-1">{item.name}</span>
                     )}
                     {(!collapsed || mobileSidebarOpen) && item.badge && (
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
-                          active
-                            ? 'bg-white/20 text-white'
-                            : 'bg-brand-500/20 text-brand-300 border border-brand-500/30'
-                        }`}
-                      >
+                      <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                         {item.badge}
                       </span>
                     )}
@@ -225,11 +267,11 @@ export default function DashboardLayout() {
           {/* Workspace Group */}
           <div>
             {(!collapsed || mobileSidebarOpen) && (
-              <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <p className="px-2.5 text-[10px] font-semibold text-[#71717A] uppercase tracking-wider mb-1.5">
                 Workspace
               </p>
             )}
-            <nav className="space-y-1">
+            <nav className="space-y-0.5">
               {workspaceNav.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -238,14 +280,14 @@ export default function DashboardLayout() {
                     key={item.name}
                     to={item.href}
                     onClick={() => setMobileSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all group ${
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-medium transition-colors group ${
                       active
-                        ? 'bg-brand-600 text-white shadow-md shadow-brand-600/20'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-surface-800/80'
+                        ? 'bg-[#17171C] text-[#F5F5F7] border-l-2 border-indigo-500 rounded-r-md rounded-l-none'
+                        : 'text-[#A1A1AA] hover:text-[#F5F5F7] hover:bg-[#17171C] rounded-md'
                     } ${collapsed && !mobileSidebarOpen ? 'justify-center px-0' : ''}`}
                     title={collapsed ? item.name : undefined}
                   >
-                    <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-indigo-400' : 'text-[#71717A] group-hover:text-[#A1A1AA]'}`} />
                     {(!collapsed || mobileSidebarOpen) && (
                       <span className="truncate flex-1">{item.name}</span>
                     )}
@@ -257,7 +299,7 @@ export default function DashboardLayout() {
         </div>
 
         {/* Bottom Section */}
-        <div className="p-3 border-t border-surface-800 space-y-1">
+        <div className="p-2.5 border-t border-[#292930] space-y-0.5">
           {bottomNav.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -266,14 +308,14 @@ export default function DashboardLayout() {
                 key={item.name}
                 to={item.href}
                 onClick={() => setMobileSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-medium transition-colors ${
                   active
-                    ? 'bg-brand-600 text-white'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-surface-800/80'
+                    ? 'bg-[#17171C] text-[#F5F5F7] border-l-2 border-indigo-500 rounded-r-md rounded-l-none'
+                    : 'text-[#A1A1AA] hover:text-[#F5F5F7] hover:bg-[#17171C] rounded-md'
                 } ${collapsed && !mobileSidebarOpen ? 'justify-center px-0' : ''}`}
                 title={collapsed ? item.name : undefined}
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-indigo-400' : 'text-[#71717A]'}`} />
                 {(!collapsed || mobileSidebarOpen) && <span className="truncate">{item.name}</span>}
               </Link>
             );
@@ -282,33 +324,34 @@ export default function DashboardLayout() {
           {/* User Profile Mini Tab */}
           <div className="pt-2">
             <Dropdown
-              width="w-56"
+              width={collapsed && !mobileSidebarOpen ? 'w-56' : 'w-full'}
               align="left"
+              className="w-full block"
               trigger={
                 <div
-                  className={`w-full flex items-center gap-3 p-2 rounded-xl bg-surface-950/60 hover:bg-surface-800 border border-surface-800/80 transition-colors cursor-pointer ${
+                  className={`w-full flex items-center gap-2.5 p-1.5 rounded-md bg-[#111114] hover:bg-[#17171C] border border-[#292930] transition-colors cursor-pointer ${
                     collapsed && !mobileSidebarOpen ? 'justify-center p-1.5' : ''
                   }`}
                 >
-                  <Avatar name={displayName} size="sm" status="online" />
+                  <Avatar name={displayName} size="xs" status="online" />
                   {(!collapsed || mobileSidebarOpen) && (
                     <div className="text-left truncate flex-1">
-                      <p className="text-xs font-semibold text-slate-200 truncate">{displayName}</p>
-                      <p className="text-[10px] text-slate-400 truncate">{displayEmail}</p>
+                      <p className="text-xs font-medium text-[#F5F5F7] truncate">{displayName}</p>
+                      <p className="text-[10px] text-[#71717A] truncate">{displayEmail}</p>
                     </div>
                   )}
                 </div>
               }
             >
-              <div className="px-3.5 py-2.5 border-b border-surface-800">
-                <p className="text-xs font-bold text-white truncate">{displayName}</p>
-                <p className="text-[10px] text-slate-400 truncate">{displayEmail}</p>
+              <div className="px-3.5 py-2 border-b border-[#1F1F24]">
+                <p className="text-xs font-medium text-[#F5F5F7] truncate">{displayName}</p>
+                <p className="text-[10px] text-[#71717A] truncate">{displayEmail}</p>
               </div>
               <DropdownItem icon={User} onClick={() => navigate('/profile')}>
-                View Profile
+                My Profile
               </DropdownItem>
               <DropdownItem icon={Settings} onClick={() => navigate('/settings')}>
-                Preferences
+                Workspace Settings
               </DropdownItem>
               <DropdownDivider />
               <DropdownItem icon={LogOut} danger onClick={handleSignOut}>
@@ -320,48 +363,51 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#080808]">
         {/* Top Navigation Bar */}
-        <header className="h-16 border-b border-surface-800 bg-surface-900/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+        <header className="h-12 border-b border-[#292930] bg-[#0B0B0E] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
           {/* Left: Mobile Toggle & Search */}
           <div className="flex items-center gap-3 flex-1 max-w-lg">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="md:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-surface-800"
+              className="md:hidden text-[#71717A] hover:text-[#F5F5F7] p-1 rounded hover:bg-[#17171C]"
               aria-label="Open sidebar"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Visual Search Bar */}
+            {/* Linear-style Search Bar */}
             <div
-              onClick={() => addToast('Global Search is a Phase 2 visual mockup (Press Ctrl+K)', 'info')}
-              className="w-full max-w-sm hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-surface-950/80 border border-surface-800 text-slate-400 hover:border-surface-700 cursor-pointer transition-colors"
+              onClick={() => addToast('Search is active across projects, boards, and members', 'info')}
+              className="w-full max-w-xs hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#111114] border border-[#292930] text-[#71717A] hover:border-[#383842] cursor-pointer transition-colors"
             >
-              <Search className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-xs flex-1 truncate">Search tasks, projects, members...</span>
-              <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-400 bg-surface-800 border border-surface-700 rounded">
-                Ctrl K
+              <Search className="w-3.5 h-3.5 text-[#71717A]" />
+              <span className="text-xs flex-1 truncate">Search issues, projects, teams...</span>
+              <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.2 text-[10px] font-mono text-[#71717A] bg-[#17171C] border border-[#292930] rounded">
+                /
               </kbd>
             </div>
           </div>
 
           {/* Right Topbar Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {/* Quick Action New Button */}
             <Dropdown
               width="w-48"
               trigger={
                 <Button size="xs" leftIcon={Plus} variant="primary">
-                  <span>Create</span>
+                  <span>New</span>
                 </Button>
               }
             >
-              <DropdownItem icon={CheckSquare} onClick={() => setCreateTaskOpen(true)}>
-                New Task
+              <DropdownItem icon={Building} onClick={() => setCreateOrgOpen(true)}>
+                New Workspace
               </DropdownItem>
               <DropdownItem icon={FolderKanban} onClick={() => setCreateProjectOpen(true)}>
                 New Project
+              </DropdownItem>
+              <DropdownItem icon={CheckSquare} onClick={() => setCreateTaskOpen(true)}>
+                New Issue
               </DropdownItem>
             </Dropdown>
 
@@ -376,28 +422,92 @@ export default function DashboardLayout() {
               trigger={
                 <button
                   type="button"
-                  className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-surface-800 transition-colors"
+                  className="relative p-1.5 rounded-md text-[#71717A] hover:text-[#F5F5F7] hover:bg-[#17171C] transition-colors"
                   aria-label="Notifications"
                 >
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-surface-900 animate-pulse"></span>
+                  <Bell className="w-4 h-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-[#0B0B0E]" />
+                  )}
                 </button>
               }
             >
-              <div className="px-4 py-3 border-b border-surface-800 flex items-center justify-between">
-                <span className="text-xs font-bold text-white">Notifications</span>
-                <span className="text-[10px] font-semibold text-brand-400 hover:underline cursor-pointer" onClick={() => navigate('/notifications')}>
-                  View all
-                </span>
+              <div className="px-4 py-3 border-b border-[#1F1F24] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-[#F5F5F7]">Notifications</span>
+                  {unreadCount > 0 && (
+                    <Badge variant="brand" size="xs">
+                      {unreadCount} new
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllNotificationsAsRead}
+                      className="text-[10px] font-medium text-[#A1A1AA] hover:text-[#F5F5F7]"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                  <span
+                    className="text-[10px] font-medium text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer"
+                    onClick={() => navigate('/notifications')}
+                  >
+                    View all
+                  </span>
+                </div>
               </div>
-              <div className="divide-y divide-surface-800/60 max-h-72 overflow-y-auto">
-                {mockNotifications.map((n) => (
-                  <div key={n.id} className={`p-3.5 hover:bg-surface-800/50 transition-colors ${n.unread ? 'bg-brand-500/5' : ''}`}>
-                    <p className="text-xs font-semibold text-slate-200">{n.title}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{n.desc}</p>
-                    <p className="text-[10px] text-slate-500 mt-1">{n.time}</p>
+
+              <div className="divide-y divide-[#1F1F24] max-h-80 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-[#71717A]">
+                    <p className="font-medium text-[#F5F5F7]">You're all caught up!</p>
+                    <p className="text-[11px] text-[#71717A] mt-1">No new notifications</p>
                   </div>
-                ))}
+                ) : (
+                  notifications.slice(0, 5).map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => {
+                        markNotificationAsRead(n.id);
+                        if (n.type === 'project_member_added' || n.type === 'project_role_changed') {
+                          navigate(`/projects/${n.metadata?.projectId || n.entityId || ''}`);
+                        } else if (n.type?.startsWith('organization_') || n.entityType === 'organization') {
+                          navigate('/team');
+                        } else if (n.type === 'file_uploaded') {
+                          if (n.entityType === 'task' || n.metadata?.taskId) {
+                            navigate('/tasks');
+                          } else {
+                            navigate('/files');
+                          }
+                        } else if (n.type === 'channel_message') {
+                          navigate('/messages');
+                        } else {
+                          navigate('/tasks');
+                        }
+                      }}
+                      className={`p-3.5 hover:bg-[#202027] transition-colors cursor-pointer flex items-start gap-3 ${
+                        !n.isRead ? 'bg-indigo-500/10' : ''
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-xs font-semibold text-[#F5F5F7] truncate">{n.title}</p>
+                          {!n.isRead && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                          )}
+                        </div>
+                        <p className="text-[11px] text-[#A1A1AA] mt-0.5 line-clamp-2 leading-snug">
+                          {n.message}
+                        </p>
+                        <p className="text-[10px] text-[#71717A] mt-1">
+                          {formatDropdownTime(n.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </Dropdown>
 
@@ -410,15 +520,21 @@ export default function DashboardLayout() {
                 </div>
               }
             >
-              <div className="px-3.5 py-2.5 border-b border-surface-800">
-                <p className="text-xs font-bold text-white truncate">{displayName}</p>
-                <p className="text-[10px] text-slate-400 truncate">{displayEmail}</p>
+              <div className="px-3.5 py-2.5 border-b border-[#1F1F24]">
+                <p className="text-xs font-semibold text-[#F5F5F7] truncate">{displayName}</p>
+                <p className="text-[10px] text-[#A1A1AA] truncate">{displayEmail}</p>
               </div>
               <DropdownItem icon={User} onClick={() => navigate('/profile')}>
                 My Profile
               </DropdownItem>
               <DropdownItem icon={Settings} onClick={() => navigate('/settings')}>
                 Workspace Settings
+              </DropdownItem>
+              <DropdownItem
+                icon={isDark ? Sun : Moon}
+                onClick={toggleTheme}
+              >
+                {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               </DropdownItem>
               <DropdownDivider />
               <DropdownItem icon={LogOut} danger onClick={handleSignOut}>
@@ -430,13 +546,22 @@ export default function DashboardLayout() {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          <Outlet />
+          <ErrorBoundary resetKey={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 
-      {/* Global Modals for Fast UI Prototyping */}
+      {/* Global Modals */}
+      <CreateOrganizationModal isOpen={createOrgOpen} onClose={() => setCreateOrgOpen(false)} />
       <CreateTaskModal isOpen={createTaskOpen} onClose={() => setCreateTaskOpen(false)} />
-      <CreateProjectModal isOpen={createProjectOpen} onClose={() => setCreateProjectOpen(false)} />
+      <CreateProjectModal
+        isOpen={createProjectOpen}
+        onClose={() => setCreateProjectOpen(false)}
+        onProjectCreated={() => {
+          if (refreshProjects) refreshProjects();
+        }}
+      />
     </div>
   );
 }
