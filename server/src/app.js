@@ -34,15 +34,33 @@ app.use(express.urlencoded({ extended: true }));
 // Mount main API routes
 app.use('/api', apiRoutes);
 
-// Root path handler
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'FlowSync Server is running. Visit /api/health for system status.',
-  });
-});
+const path = require('path');
+const fs = require('fs');
 
-// Handle 404 routes
+const clientDist = path.resolve(__dirname, '../../client/dist');
+
+// Serve client-side static build and handle SPA routing
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+
+  // SPA fallback for all frontend routes (excluding /api)
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+} else {
+  // Standalone API info when frontend build is absent
+  app.get('/', (req, res) => {
+    res.json({
+      success: true,
+      message: 'FlowSync Server is running. Visit /api/health for system status.',
+    });
+  });
+}
+
+// Handle 404 for unhandled API routes
 app.use(notFoundHandler);
 
 // Centralized error handler
