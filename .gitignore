@@ -11,14 +11,38 @@ node_modules/
 **/.env.test.local
 **/.env.production.local
 !**/.env.example
+
+# Private Keys & Certificates
 *.pem
 *.key
 *.cert
+*.crt
+*.pfx
+*.p12
 
-# Production Build Outputs
+# Cloud Credentials & Service Accounts
+*credentials*.json
+*service-account*.json
+firebase-adminsdk*.json
+
+# Supabase Local CLI State & Temp Folders
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# Production Build Outputs & Bundler Caches
 dist/
 build/
 out/
+.vite/
+
+# Database Dumps & Ad-hoc Backups (preserves supabase/migrations/*.sql)
+*.dump
+*.sql.bak
+*.backup
+*.sqlite
+*.sqlite3
+*.db
 
 # Logs
 logs/
@@ -32,9 +56,16 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 
+# Cache & Linter Artifacts
+.eslintcache
+*.tsbuildinfo
+
 # Editor & OS Artifacts
 .DS_Store
+._*
 Thumbs.db
+desktop.ini
+ehthumbs.db
 .vscode/
 .idea/
 *.suo
